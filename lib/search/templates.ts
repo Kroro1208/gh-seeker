@@ -7,8 +7,8 @@ export type SearchTemplate = {
 export const SEARCH_TEMPLATES: SearchTemplate[] = [
   {
     label: "ユーザー名で検索",
-    value: "user:Kroro1208",
-    example: "user:Kroro1208",
+    value: "user:vercel",
+    example: "user:vercel",
   },
   {
     label: "言語で絞り込み",
@@ -17,12 +17,12 @@ export const SEARCH_TEMPLATES: SearchTemplate[] = [
   },
   {
     label: "Star数で絞り込み",
-    value: "stars:>100",
-    example: "stars:>100",
+    value: "stars:>1000",
+    example: "stars:>1000",
   },
   {
     label: "複合検索",
-    value: "user:Kroro1208 language:TypeScript",
-    example: "user:Kroro1208 language:TypeScript",
+    value: "user:vercel language:TypeScript",
+    example: "user:vercel language:TypeScript",
   },
 ];
