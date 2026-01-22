@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  GitHubAPIError,
-  searchRepositories,
-} from "@/lib/github/server-client";
+import { GitHubAPIError, searchRepositories } from "@/lib/github/server-client";
 import { parseSearchParams } from "@/lib/api/parsers";
 
 export async function GET(request: NextRequest) {
