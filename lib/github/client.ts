@@ -13,91 +13,111 @@ import {
   GitHubValidationError,
   GitHubResponseFormatError,
 } from "./errors";
+import { HttpClient, defaultHttpClient } from "@/lib/http/client";
 
 const API_BASE_PATH = "/api/github";
 
-async function fetchAPI<T>(
-  endpoint: string,
-  schema: z.ZodSchema<T>,
-): Promise<T> {
-  const url = `${API_BASE_PATH}${endpoint}`;
+// GitHub APIクライアントの設定
+export type GitHubClientConfig = {
+  httpClient?: HttpClient;
+  basePath?: string;
+};
 
-  try {
-    const response = await fetch(url);
+// GitHub APIクライアントを作成
+// テスト時にhttpClientを注入可能にする
+export function createGitHubClient(config: GitHubClientConfig = {}) {
+  const { httpClient = defaultHttpClient, basePath = API_BASE_PATH } = config;
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+  async function fetchAPI<T>(
+    endpoint: string,
+    schema: z.ZodSchema<T>,
+  ): Promise<T> {
+    const url = `${basePath}${endpoint}`;
 
-      throw new GitHubAPIError(
-        errorData?.message ??
-          `GitHub API request failed: ${response.statusText}`,
-        response.status,
-        errorData,
+    try {
+      const response = await httpClient.fetch(url);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        throw new GitHubAPIError(
+          errorData?.message ??
+            `GitHub API request failed: ${response.statusText}`,
+          response.status,
+          errorData,
+        );
+      }
+
+      const data: unknown = await response.json();
+
+      // Zodでバリデーション
+      const result = schema.safeParse(data);
+
+      if (!result.success) {
+        throw new GitHubResponseFormatError(
+          `Invalid response format: ${result.error.message}`,
+          data,
+        );
+      }
+
+      return result.data;
+    } catch (error) {
+      if (error instanceof GitHubError) {
+        throw error;
+      }
+
+      if (error instanceof Error) {
+        throw new GitHubNetworkError(`Network error: ${error.message}`);
+      }
+
+      throw new GitHubNetworkError("Unknown error occurred");
+    }
+  }
+
+  return {
+    async searchRepositories(
+      params: SearchRepositoriesParams,
+    ): Promise<SearchRepositoriesResponse> {
+      const { q, sort, order, per_page = 30, page = 1 } = params;
+
+      if (!q || q.trim() === "") {
+        throw new GitHubValidationError("Search query is required");
+      }
+
+      const searchParams = new URLSearchParams({
+        q,
+        per_page: per_page.toString(),
+        page: page.toString(),
+      });
+
+      if (sort) {
+        searchParams.append("sort", sort);
+      }
+
+      if (order) {
+        searchParams.append("order", order);
+      }
+
+      return fetchAPI(
+        `/search?${searchParams.toString()}`,
+        SearchRepositoriesResponseSchema,
       );
-    }
+    },
 
-    const data: unknown = await response.json();
+    async getRepository(owner: string, repo: string): Promise<Repository> {
+      if (!owner || !repo) {
+        throw new GitHubValidationError(
+          "Owner and repository name are required",
+        );
+      }
 
-    // Zodでバリデーション
-    const result = schema.safeParse(data);
-
-    if (!result.success) {
-      throw new GitHubResponseFormatError(
-        `Invalid response format: ${result.error.message}`,
-        data,
-      );
-    }
-
-    return result.data;
-  } catch (error) {
-    if (error instanceof GitHubError) {
-      throw error;
-    }
-
-    if (error instanceof Error) {
-      throw new GitHubNetworkError(`Network error: ${error.message}`);
-    }
-
-    throw new GitHubNetworkError("Unknown error occurred");
-  }
+      return fetchAPI(`/repositories/${owner}/${repo}`, RepositorySchema);
+    },
+  };
 }
 
-export async function searchRepositories(
-  params: SearchRepositoriesParams,
-): Promise<SearchRepositoriesResponse> {
-  const { q, sort, order, per_page = 30, page = 1 } = params;
+// デフォルトのクライアントインスタンス（後方互換性のため）
+const defaultClient = createGitHubClient();
 
-  if (!q || q.trim() === "") {
-    throw new GitHubValidationError("Search query is required");
-  }
-
-  const searchParams = new URLSearchParams({
-    q,
-    per_page: per_page.toString(),
-    page: page.toString(),
-  });
-
-  if (sort) {
-    searchParams.append("sort", sort);
-  }
-
-  if (order) {
-    searchParams.append("order", order);
-  }
-
-  return fetchAPI(
-    `/search?${searchParams.toString()}`,
-    SearchRepositoriesResponseSchema,
-  );
-}
-
-export async function getRepository(
-  owner: string,
-  repo: string,
-): Promise<Repository> {
-  if (!owner || !repo) {
-    throw new GitHubValidationError("Owner and repository name are required");
-  }
-
-  return fetchAPI(`/repositories/${owner}/${repo}`, RepositorySchema);
-}
+export const searchRepositories = defaultClient.searchRepositories;
+export const getRepository = defaultClient.getRepository;
