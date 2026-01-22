@@ -1,44 +1,15 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { useQueryState } from "nuqs";
-import { FormEvent, useState } from "react";
-import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Search } from "lucide-react";
+import { useSearchForm } from "@/hooks/use-search-form";
 import { SearchGuide } from "@/components/search/search-guide";
 
 export function SearchInput() {
-  // nuqs を使ってクエリパラメータを管理
-  // クエリパラメータとstateを同期する
-  const [query, setQuery] = useQueryState("q", {
-    defaultValue: "",
-    shallow: false, // ページ遷移を伴わない更新を行う
-  });
-  const [, setPage] = useQueryState("page", {
-    defaultValue: "1",
-    shallow: false,
-  });
-
-  const [inputValue, setInputValue] = useState(query); // ここでnuqsのqueryを初期値として設定しておく
-  const [validationMessage, setValidationMessage] = useState("");
-
-  // フォームの送信用
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const nextQuery = inputValue.trim();
-    if (!nextQuery) {
-      setValidationMessage("キーワードを入力してください");
-    } else {
-      setValidationMessage("");
-    }
-    // クエリパラメータを更新
-    setQuery(nextQuery || null);
-    if (nextQuery) {
-      setPage("1");
-    } else {
-      setPage(null);
-    }
-  };
+  const { state, handlers } = useSearchForm();
+  const { inputValue, validationError } = state;
+  const { setInputValue, handleSubmit, clearValidationError } = handlers;
 
   return (
     <div className="w-full space-y-2">
@@ -51,13 +22,7 @@ export function SearchInput() {
             autoComplete="off"
             placeholder="リポジトリを検索..."
             value={inputValue}
-            onChange={(event) => {
-              const nextValue = event.target.value;
-              setInputValue(nextValue);
-              if (validationMessage && nextValue.trim()) {
-                setValidationMessage("");
-              }
-            }}
+            onChange={(event) => setInputValue(event.target.value)}
             className="pl-9"
             aria-label="リポジトリ検索"
           />
@@ -66,17 +31,15 @@ export function SearchInput() {
           検索
         </Button>
       </form>
-      {validationMessage ? (
-        <p className="text-sm text-destructive">{validationMessage}</p>
-      ) : null}
+      {validationError && (
+        <p className="text-sm text-destructive">{validationError}</p>
+      )}
 
       {/* 検索ガイドエリア */}
       <SearchGuide
         onSelectTemplate={(value) => {
           setInputValue(value);
-          if (validationMessage) {
-            setValidationMessage("");
-          }
+          clearValidationError();
         }}
       />
     </div>

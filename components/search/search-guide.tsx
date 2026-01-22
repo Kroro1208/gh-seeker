@@ -24,7 +24,7 @@ export function SearchGuide({ onSelectTemplate }: SearchGuideProps) {
               type="button"
               variant="outline"
               onClick={() => onSelectTemplate(template.value)}
-              className="h-auto w-full flex-col items-start justify-start gap-0 whitespace-normal border-border/60 bg-background/60 p-3 text-left text-foreground shadow-none transition hover:bg-background/80 hover:text-foreground focus-visible:ring-2"
+              className="h-auto w-full cursor-pointer flex-col items-start justify-start gap-0 whitespace-normal border-border/60 bg-background/60 p-3 text-left text-foreground shadow-none transition hover:bg-background/80 hover:text-foreground focus-visible:ring-2"
             >
               <p className="font-medium text-foreground">{template.label}</p>
               <p className="mt-1">
