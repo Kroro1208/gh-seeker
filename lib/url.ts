@@ -1,8 +1,6 @@
 import { createSerializer, parseAsInteger, parseAsString } from "nuqs";
 
-/**
- * 検索パラメータのパーサー定義
- */
+// 検索パラメータのパーサー定義
 export const searchParamsParsers = {
   q: parseAsString,
   repoId: parseAsInteger,
@@ -13,7 +11,6 @@ export const searchParamsParsers = {
   per_page: parseAsInteger,
 };
 
-/**
- * 検索パラメータをURLクエリ文字列にシリアライズ
- */
+// 検索パラメータをURLクエリ文字列にシリアライズ
+
 export const serializeSearchParams = createSerializer(searchParamsParsers);
