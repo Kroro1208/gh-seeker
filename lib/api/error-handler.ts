@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { GitHubAPIError } from "@/lib/github/server-client";
+import { logger, serializeError } from "@/lib/logger";
 
-/**
- * GitHubAPIErrorをユーザーフレンドリーなメッセージに変換
- */
+// GitHubAPIErrorをユーザーフレンドリーなメッセージに変換
 function getUserFriendlyMessage(error: GitHubAPIError): string {
   switch (error.status) {
     case 401:
@@ -19,13 +18,18 @@ function getUserFriendlyMessage(error: GitHubAPIError): string {
   }
 }
 
-/**
- * エラーをNextResponseに変換
- * 本番環境では詳細情報を含めない
- */
+// エラーをNextResponseに変換
+// 本番環境では詳細情報を含めない
 export function handleAPIError(error: unknown): NextResponse {
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   if (error instanceof GitHubAPIError) {
-    const isDevelopment = process.env.NODE_ENV === "development";
+    // GitHub APIエラーをログに記録
+    logger.warn("GitHub API error", {
+      status: error.status,
+      message: error.message,
+      response: error.response,
+    });
 
     return NextResponse.json(
       {
@@ -41,8 +45,10 @@ export function handleAPIError(error: unknown): NextResponse {
     );
   }
 
-  // 予期しないエラーの場合
-  const isDevelopment = process.env.NODE_ENV === "development";
+  // 予期しないエラーの場合はエラーとしてログに記録
+  logger.error("Unexpected API error", {
+    error: serializeError(error),
+  });
 
   return NextResponse.json(
     {
