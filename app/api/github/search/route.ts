@@ -1,23 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GitHubAPIError, searchRepositories } from "@/lib/github/server-client";
+import { searchRepositories } from "@/lib/github/server-client";
 import { parseSearchParams } from "@/lib/api/parsers";
+import { handleAPIError } from "@/lib/api/error-handler";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   try {
-    const params = parseSearchParams(request.nextUrl.searchParams);
-    const data = await searchRepositories(params);
-    return NextResponse.json(data);
-  } catch (error) {
-    if (error instanceof GitHubAPIError) {
+    // Rate Limitチェック（IPアドレスまたはトークンをidentifierとして使用）
+    const identifier =
+      request.headers.get("x-github-token") ||
+      request.headers.get("x-forwarded-for") ||
+      "anonymous";
+
+    const { success, limit, remaining, reset } =
+      await checkRateLimit(identifier);
+
+    if (!success) {
       return NextResponse.json(
-        { message: error.message, details: error.response },
-        { status: error.status ?? 500 },
+        {
+          message:
+            "リクエストが多すぎます。しばらく待ってから再度お試しください。",
+          rateLimit: {
+            limit,
+            remaining,
+            reset: new Date(reset).toISOString(),
+          },
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+            "Retry-After": Math.ceil((reset - Date.now()) / 1000).toString(),
+          },
+        },
       );
     }
 
-    return NextResponse.json(
-      { message: "Unknown error occurred" },
-      { status: 500 },
-    );
+    const params = parseSearchParams(request.nextUrl.searchParams);
+    const token = request.headers.get("x-github-token") ?? undefined;
+    const data = await searchRepositories(params, token);
+
+    // Rate Limit情報をレスポンスヘッダーに含める
+    return NextResponse.json(data, {
+      headers: {
+        "X-RateLimit-Limit": limit.toString(),
+        "X-RateLimit-Remaining": remaining.toString(),
+        "X-RateLimit-Reset": reset.toString(),
+      },
+    });
+  } catch (error) {
+    return handleAPIError(error);
   }
 }
