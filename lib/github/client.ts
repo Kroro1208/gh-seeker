@@ -14,6 +14,7 @@ import {
   GitHubResponseFormatError,
 } from "./errors";
 import { HttpClient, defaultHttpClient } from "@/lib/http/client";
+import { getGitHubToken } from "@/lib/github/token";
 
 const API_BASE_PATH = "/api/github";
 
@@ -33,9 +34,14 @@ export function createGitHubClient(config: GitHubClientConfig = {}) {
     schema: z.ZodSchema<T>,
   ): Promise<T> {
     const url = `${basePath}${endpoint}`;
+    const token = getGitHubToken();
+    const headers = token ? { "X-GitHub-Token": token } : undefined;
 
     try {
-      const response = await httpClient.fetch(url);
+      const response = await httpClient.fetch(
+        url,
+        headers ? { headers } : undefined,
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

@@ -6,8 +6,8 @@ import {
   Repository,
   RepositorySchema,
 } from "./types";
-
-const GITHUB_API_BASE_URL = "https://api.github.com";
+import { logger, serializeError } from "@/lib/logger";
+import { GITHUB_CONFIG } from "@/lib/config";
 
 export class GitHubAPIError extends Error {
   constructor(
@@ -23,58 +23,43 @@ export class GitHubAPIError extends Error {
 async function fetchGitHub<T>(
   endpoint: string,
   schema: z.ZodSchema<T>,
+  tokenOverride?: string,
 ): Promise<T> {
-  const token = process.env.GITHUB_TOKEN;
+  const token = tokenOverride?.trim() || process.env.GITHUB_TOKEN;
 
   if (!token) {
-    throw new GitHubAPIError(
-      "GITHUB_TOKEN is not configured. Please set it in .env.local",
+    const error = new GitHubAPIError(
+      "GitHub token is not configured",
+      401, // 認証エラーとして扱う
     );
+    logger.error("GitHub token not configured", {
+      endpoint,
+      hasOverride: Boolean(tokenOverride),
+    });
+    throw error;
   }
 
-  const url = `${GITHUB_API_BASE_URL}${endpoint}`;
+  const url = `${GITHUB_CONFIG.API_BASE_URL}${endpoint}`;
 
   try {
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
+        "X-GitHub-Api-Version": GITHUB_CONFIG.API_VERSION,
       },
       next: {
-        revalidate: 60, // キャッシュ60秒
+        revalidate: GITHUB_CONFIG.CACHE_REVALIDATE_SECONDS,
       },
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
-      if (response.status === 401) {
-        throw new GitHubAPIError(
-          "Unauthorized. Please check your GitHub token.",
-          401,
-          errorData,
-        );
-      }
-
-      if (response.status === 403) {
-        throw new GitHubAPIError(
-          "Forbidden. You may have hit the rate limit.",
-          403,
-          errorData,
-        );
-      }
-
-      if (response.status === 422) {
-        throw new GitHubAPIError(
-          "Validation failed. Please check your search query.",
-          422,
-          errorData,
-        );
-      }
-
+      // ステータスコードとレスポンスデータのみを保持
+      // 詳細なメッセージは error-handler.ts で処理
       throw new GitHubAPIError(
-        `GitHub API request failed: ${response.statusText}`,
+        `GitHub API error: ${response.status} ${response.statusText}`,
         response.status,
         errorData,
       );
@@ -85,34 +70,52 @@ async function fetchGitHub<T>(
     const result = schema.safeParse(data);
 
     if (!result.success) {
+      logger.error("Invalid GitHub API response format", {
+        endpoint,
+        validationError: result.error.message,
+        responseData: data,
+      });
+
       throw new GitHubAPIError(
         `Invalid response format: ${result.error.message}`,
-        undefined,
+        500, // サーバー側の問題として扱う
         data,
       );
     }
 
     return result.data;
   } catch (error) {
+    // GitHubAPIError はそのまま再スロー
     if (error instanceof GitHubAPIError) {
       throw error;
     }
 
+    // ネットワークエラー等の予期しないエラー
+    logger.error("APIリクエストエラー", {
+      endpoint,
+      error: serializeError(error),
+    });
+
     if (error instanceof Error) {
-      throw new GitHubAPIError(`Network error: ${error.message}`);
+      throw new GitHubAPIError(
+        `ネットワークエラー等の予期しないエラー: ${error.message}`,
+        503,
+      ); // Service Unavailable
     }
 
-    throw new GitHubAPIError("Unknown error occurred");
+    throw new GitHubAPIError("不明なエラーが発生しました", 500);
   }
 }
 
 export async function searchRepositories(
   params: SearchRepositoriesParams,
+  tokenOverride?: string,
 ): Promise<SearchRepositoriesResponse> {
   const { q, sort, order, per_page = 30, page = 1 } = params;
 
+  // クライアントエラーとして適切なステータスコードを設定
   if (!q || q.trim() === "") {
-    throw new GitHubAPIError("Search query is required");
+    throw new GitHubAPIError("検索クエリは必須です", 400);
   }
 
   const searchParams = new URLSearchParams({
@@ -132,16 +135,18 @@ export async function searchRepositories(
   return fetchGitHub(
     `/search/repositories?${searchParams.toString()}`,
     SearchRepositoriesResponseSchema,
+    tokenOverride,
   );
 }
 
 export async function getRepository(
   owner: string,
   repo: string,
+  tokenOverride?: string,
 ): Promise<Repository> {
-  if (!owner || !repo) {
-    throw new GitHubAPIError("Owner and repository name are required");
-  }
-
-  return fetchGitHub(`/repos/${owner}/${repo}`, RepositorySchema);
+  return fetchGitHub(
+    `/repos/${owner}/${repo}`,
+    RepositorySchema,
+    tokenOverride,
+  );
 }
