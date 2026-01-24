@@ -15,6 +15,7 @@ const SORT_OPTIONS = ["stars", "updated", "forks"] satisfies Array<
   SearchRepositoriesParams["sort"]
 >;
 
+// sortオプションかどうかを判定する型ガード
 function isSortOption(
   value: string | undefined,
 ): value is SearchRepositoriesParams["sort"] {
@@ -119,19 +120,13 @@ export function useRepositorySearch(): UseRepositorySearchResult {
   const { data, isLoading, isFetching, error, refetch } =
     useSearchRepositories(currentParams);
 
-  // 事前フェッチ
+  // 事前フェッチしてSortオプション切り替え時のUXを向上させる
   useEffect(() => {
     if (!trimmedQuery) {
       return;
     }
 
-    const sortOptions: Array<SearchRepositoriesParams["sort"]> = [
-      "stars",
-      "updated",
-      "forks",
-    ];
-
-    for (const sortOption of sortOptions) {
+    for (const sortOption of SORT_OPTIONS) {
       if (sortOption === normalizedSort) continue;
 
       const params: SearchRepositoriesParams = {
