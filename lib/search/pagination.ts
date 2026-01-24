@@ -30,8 +30,9 @@ export function computePaginationMetrics({
   maxSearchResults,
 }: PaginationParams): PaginationMetrics {
   const maxPage = Math.ceil(maxSearchResults / perPage);
-  const effectivePage = Math.min(Math.max(page, 1), maxPage); // 1以上maxPage以下に制限
-  const offset = (effectivePage - 1) * perPage;
+  // ユーザーが直接URLに不正なページ番号を入力した場合の補正をしておく
+  const effectivePage = Math.min(Math.max(page, 1), maxPage);
+  const offset = (effectivePage - 1) * perPage; //
 
   // totalCountをmaxSearchResultsで制限
   const limitedTotal = Math.min(totalCount, maxSearchResults);
