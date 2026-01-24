@@ -4,6 +4,7 @@ import { parseSearchParams } from "@/lib/api/parsers";
 import { handleAPIError } from "@/lib/api/error-handler";
 import { checkRateLimit } from "@/lib/rate-limit";
 
+// 一覧取得API
 export async function GET(request: NextRequest) {
   try {
     // Rate Limitチェック（IPアドレスまたはトークンをidentifierとして使用）

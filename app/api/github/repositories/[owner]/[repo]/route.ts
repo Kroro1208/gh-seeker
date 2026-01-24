@@ -10,6 +10,7 @@ type RouteContext = {
   }>;
 };
 
+// 詳細取得API
 export async function GET(request: Request, { params }: RouteContext) {
   try {
     // Rate Limitチェック

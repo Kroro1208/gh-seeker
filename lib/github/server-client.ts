@@ -20,6 +20,8 @@ export class GitHubAPIError extends Error {
   }
 }
 
+// ここでラップしてエラー処理、認証ヘッダー、JSON パースなどを一箇所に集約する
+// UI層に不正なデータを漏らさない
 async function fetchGitHub<T>(
   endpoint: string,
   schema: z.ZodSchema<T>,
@@ -107,6 +109,7 @@ async function fetchGitHub<T>(
   }
 }
 
+// 一覧取得
 export async function searchRepositories(
   params: SearchRepositoriesParams,
   tokenOverride?: string,
@@ -139,6 +142,7 @@ export async function searchRepositories(
   );
 }
 
+// 詳細取得
 export async function getRepository(
   owner: string,
   repo: string,

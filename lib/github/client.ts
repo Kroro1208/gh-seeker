@@ -29,6 +29,8 @@ export type GitHubClientConfig = {
 export function createGitHubClient(config: GitHubClientConfig = {}) {
   const { httpClient = defaultHttpClient, basePath = API_BASE_PATH } = config;
 
+  // ここでラップしてエラー処理、認証ヘッダー、JSON パースなどを一箇所に集約する
+  // UI層に不正なデータを漏らさない
   async function fetchAPI<T>(
     endpoint: string,
     schema: z.ZodSchema<T>,
@@ -48,7 +50,7 @@ export function createGitHubClient(config: GitHubClientConfig = {}) {
 
         throw new GitHubAPIError(
           errorData?.message ??
-            `GitHub API request failed: ${response.statusText}`,
+            `GitHub APIリクエストに失敗しました: ${response.statusText}`,
           response.status,
           errorData,
         );
@@ -61,7 +63,7 @@ export function createGitHubClient(config: GitHubClientConfig = {}) {
 
       if (!result.success) {
         throw new GitHubResponseFormatError(
-          `Invalid response format: ${result.error.message}`,
+          `無効なレスポンス形式です: ${result.error.message}`,
           data,
         );
       }
@@ -73,14 +75,15 @@ export function createGitHubClient(config: GitHubClientConfig = {}) {
       }
 
       if (error instanceof Error) {
-        throw new GitHubNetworkError(`Network error: ${error.message}`);
+        throw new GitHubNetworkError(`ネットワークエラー: ${error.message}`);
       }
 
-      throw new GitHubNetworkError("Unknown error occurred");
+      throw new GitHubNetworkError("不明なエラーです");
     }
   }
 
   return {
+    // 一覧検索
     async searchRepositories(
       params: SearchRepositoriesParams,
     ): Promise<SearchRepositoriesResponse> {
@@ -110,6 +113,7 @@ export function createGitHubClient(config: GitHubClientConfig = {}) {
       );
     },
 
+    // 詳細取得
     async getRepository(owner: string, repo: string): Promise<Repository> {
       if (!owner || !repo) {
         throw new GitHubValidationError(

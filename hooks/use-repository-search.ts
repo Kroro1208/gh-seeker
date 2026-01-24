@@ -57,10 +57,8 @@ export type UseRepositorySearchResult = {
   handlers: RepositorySearchHandlers;
 };
 
-/**
- * リポジトリ検索のロジックを管理するカスタムフック
- * UIコンポーネントから状態管理ロジックを分離
- */
+// リポジトリ検索のロジックを管理するカスタムフック
+// UIコンポーネントから状態管理ロジックを分離
 export function useRepositorySearch(): UseRepositorySearchResult {
   const queryClient = useQueryClient();
   const [query] = useQueryState("q", { defaultValue: "" });
