@@ -5,7 +5,6 @@ import { RepositoryList } from "../repository/repository-list";
 import type { Repository } from "@/lib/github/types";
 import * as useRepositorySearchModule from "@/hooks/use-repository-search";
 
-// use-repository-search フックをモック
 vi.mock("@/hooks/use-repository-search");
 
 describe("RepositoryList", () => {
