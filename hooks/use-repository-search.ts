@@ -45,7 +45,7 @@ export type RepositorySearchState = {
   resultsRef: React.RefObject<HTMLDivElement | null>;
 };
 
-type RepositorySearchHandlers = {
+export type RepositorySearchHandlers = {
   onPageChange: (page: number) => void;
   onLanguageChange: (language: string | null) => void;
   onSortChange: (sort: string | null) => void;

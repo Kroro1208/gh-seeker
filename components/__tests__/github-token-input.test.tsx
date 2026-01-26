@@ -1,24 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GitHubTokenInput } from "../github/github-token-input";
-import * as tokenModule from "@/lib/github/token";
-
-// token モジュールをモック（システム境界）
-vi.mock("@/lib/github/token", () => ({
-  getGitHubToken: vi.fn(),
-  setGitHubToken: vi.fn(),
-}));
 
 describe("GitHubTokenInput", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // sessionStorage をクリア
+    sessionStorage.clear();
   });
 
   it("初期表示時にラベルと説明文が表示される", () => {
-    // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
-
     // Act
     render(<GitHubTokenInput />);
 
@@ -31,7 +22,7 @@ describe("GitHubTokenInput", () => {
 
   it("sessionStorageにトークンがある場合、初期値として表示される", () => {
     // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue("ghp_existing_token");
+    sessionStorage.setItem("github_token", "ghp_existing_token");
 
     // Act
     render(<GitHubTokenInput />);
@@ -42,9 +33,6 @@ describe("GitHubTokenInput", () => {
   });
 
   it("sessionStorageにトークンがない場合、空の入力欄が表示される", () => {
-    // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
-
     // Act
     render(<GitHubTokenInput />);
 
@@ -55,7 +43,6 @@ describe("GitHubTokenInput", () => {
 
   it("ユーザーがトークンを入力すると表示が更新される", async () => {
     // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
     const user = userEvent.setup();
     render(<GitHubTokenInput />);
 
@@ -68,9 +55,8 @@ describe("GitHubTokenInput", () => {
     expect(input).toHaveValue("ghp_new_token_123");
   });
 
-  it("ユーザーが入力すると setGitHubToken が呼ばれる", async () => {
+  it("ユーザーが入力すると sessionStorage に保存される", async () => {
     // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
     const user = userEvent.setup();
     render(<GitHubTokenInput />);
 
@@ -79,22 +65,27 @@ describe("GitHubTokenInput", () => {
     // Act
     await user.type(input, "ghp_test");
 
+    // Assert: sessionStorage に実際に保存されているか確認
+    expect(sessionStorage.getItem("github_token")).toBe("ghp_test");
+  });
+
+  it("入力を削除すると sessionStorage からも削除される", async () => {
+    // Arrange
+    sessionStorage.setItem("github_token", "ghp_existing");
+    const user = userEvent.setup();
+    render(<GitHubTokenInput />);
+
+    const input = screen.getByLabelText("GitHub Personal Access Token");
+
+    // Act: 既存の値をクリアして空にする
+    await user.clear(input);
+
     // Assert
-    // 各文字ごとに呼ばれる
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("g");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("gh");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("ghp");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("ghp_");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("ghp_t");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("ghp_te");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("ghp_tes");
-    expect(tokenModule.setGitHubToken).toHaveBeenCalledWith("ghp_test");
+    expect(input).toHaveValue("");
+    expect(sessionStorage.getItem("github_token")).toBeNull();
   });
 
   it("入力欄の type 属性が password である", () => {
-    // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
-
     // Act
     render(<GitHubTokenInput />);
 
@@ -104,9 +95,6 @@ describe("GitHubTokenInput", () => {
   });
 
   it("placeholder が表示される", () => {
-    // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
-
     // Act
     render(<GitHubTokenInput />);
 
@@ -116,13 +104,26 @@ describe("GitHubTokenInput", () => {
   });
 
   it("className が適用される", () => {
-    // Arrange
-    vi.mocked(tokenModule.getGitHubToken).mockReturnValue(null);
-
     // Act
     const { container } = render(<GitHubTokenInput className="custom-class" />);
 
     // Assert
     expect(container.firstChild).toHaveClass("custom-class");
+  });
+
+  it("空白のみの入力はトリミングされて削除扱いになる", async () => {
+    // Arrange
+    sessionStorage.setItem("github_token", "ghp_existing");
+    const user = userEvent.setup();
+    render(<GitHubTokenInput />);
+
+    const input = screen.getByLabelText("GitHub Personal Access Token");
+
+    // Act: 既存の値をクリアして空白を入力
+    await user.clear(input);
+    await user.type(input, "   ");
+
+    // Assert: 空白のみの場合、トリミングされて削除される
+    expect(sessionStorage.getItem("github_token")).toBeNull();
   });
 });
