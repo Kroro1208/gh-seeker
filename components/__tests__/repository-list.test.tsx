@@ -8,15 +8,6 @@ import * as useRepositorySearchModule from "@/hooks/use-repository-search";
 // use-repository-search フックをモック
 vi.mock("@/hooks/use-repository-search");
 
-// getErrorPresentation をモック
-vi.mock("@/lib/github/errors", () => ({
-  getErrorPresentation: vi.fn((error: Error) => ({
-    title: "エラーが発生しました",
-    description: error.message,
-    canRetry: true,
-  })),
-}));
-
 describe("RepositoryList", () => {
   const mockRepository: Repository = {
     id: 1,
@@ -123,8 +114,8 @@ describe("RepositoryList", () => {
   });
 
   it("エラー時はエラーメッセージと再試行ボタンを表示する", () => {
-    // Arrange
-    const mockError = new Error("Network error");
+    // Arrange: 通常のErrorは再試行可能
+    const mockError = new Error("Unexpected error");
     const mockState = createMockState({ error: mockError });
     const mockHandlers = createMockHandlers();
 
@@ -136,9 +127,9 @@ describe("RepositoryList", () => {
     // Act
     render(<RepositoryList />);
 
-    // Assert
+    // Assert: getErrorPresentation の実際の出力に基づく
     expect(screen.getByText("エラーが発生しました")).toBeInTheDocument();
-    expect(screen.getByText("Network error")).toBeInTheDocument();
+    expect(screen.getByText("Unexpected error")).toBeInTheDocument();
     expect(screen.getByText("再試行")).toBeInTheDocument();
   });
 
