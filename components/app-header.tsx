@@ -19,7 +19,7 @@ export function AppHeader() {
               className="h-12 w-12 dark:invert"
               priority
             />
-            <span>GitHub Repository Search</span>
+            <span>GH Seeaker</span>
           </h1>
         </Link>
         <div className="flex w-full items-start gap-4 lg:w-auto lg:flex-1 lg:justify-end">
