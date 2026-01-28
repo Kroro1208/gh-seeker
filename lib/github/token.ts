@@ -1,48 +1,54 @@
 import { logger, serializeError } from "@/lib/logger";
 
-const STORAGE_KEY = "github_token";
-
-// GitHub Personal Access Token を取得
-// sessionStorageに保存されているため、タブを閉じると自動的に削除される
-export function getGitHubToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
+// トークンをサーバーセッションに保存
+export async function setGitHubToken(token: string): Promise<boolean> {
   try {
-    return sessionStorage.getItem(STORAGE_KEY);
-  } catch (error) {
-    // Private mode、ストレージ無効化、クォータ超過などの場合
-    // アプリケーションは継続動作するが、エラーは記録する
-    logger.warn("セッションストレージ読み取り失敗", {
-      key: STORAGE_KEY,
-      error: serializeError(error),
+    const trimmed = token.trim();
+
+    if (!trimmed) {
+      // 空の場合は削除
+      const res = await fetch("/api/auth/token", { method: "DELETE" });
+      return res.ok;
+    }
+
+    const res = await fetch("/api/auth/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: trimmed }),
     });
-    return null;
+
+    if (!res.ok) {
+      const data = await res.json();
+      logger.warn("トークン保存失敗", { error: data.error });
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    logger.error("トークン保存エラー", { error: serializeError(error) });
+    return false;
   }
 }
 
-// GitHub Personal Access Token を保存
-// sessionStorageに保存されるため、タブを閉じると自動的に削除される
-export function setGitHubToken(token: string) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
+// トークンの存在確認（値は取得しない）
+export async function hasGitHubToken(): Promise<boolean> {
   try {
-    const trimmed = token.trim();
-    if (trimmed) {
-      sessionStorage.setItem(STORAGE_KEY, trimmed);
-    } else {
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
+    const res = await fetch("/api/auth/token");
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Boolean(data.hasToken);
+  } catch {
+    return false;
+  }
+}
+
+// トークンを削除
+export async function clearGitHubToken(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/auth/token", { method: "DELETE" });
+    return res.ok;
   } catch (error) {
-    // Private mode、ストレージ無効化、クォータ超過などの場合
-    // ユーザーには影響を与えないが、エラーは記録する
-    logger.error("セッションストレージ書き込み失敗", {
-      key: STORAGE_KEY,
-      hasToken: Boolean(token),
-      error: serializeError(error),
-    });
+    logger.error("トークン削除エラー", { error: serializeError(error) });
+    return false;
   }
 }

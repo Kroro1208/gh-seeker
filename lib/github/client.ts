@@ -14,7 +14,6 @@ import {
   GitHubResponseFormatError,
 } from "./errors";
 import { HttpClient, defaultHttpClient } from "@/lib/http/client";
-import { getGitHubToken } from "@/lib/github/token";
 
 const API_BASE_PATH = "/api/github";
 
@@ -29,21 +28,17 @@ export type GitHubClientConfig = {
 export function createGitHubClient(config: GitHubClientConfig = {}) {
   const { httpClient = defaultHttpClient, basePath = API_BASE_PATH } = config;
 
-  // ここでラップしてエラー処理、認証ヘッダー、JSON パースなどを一箇所に集約する
+  // ここでラップしてエラー処理、JSON パースなどを一箇所に集約する
   // UI層に不正なデータを漏らさない
+  // トークンはHttpOnlyセッションCookieで自動送信される
   async function fetchAPI<T>(
     endpoint: string,
     schema: z.ZodSchema<T>,
   ): Promise<T> {
     const url = `${basePath}${endpoint}`;
-    const token = getGitHubToken();
-    const headers = token ? { "X-GitHub-Token": token } : undefined;
 
     try {
-      const response = await httpClient.fetch(
-        url,
-        headers ? { headers } : undefined,
-      );
+      const response = await httpClient.fetch(url);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
