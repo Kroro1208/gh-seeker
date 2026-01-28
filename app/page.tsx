@@ -4,6 +4,7 @@ import { RepositoryListSkeleton } from "@/components/repository/repository-list-
 import { BackgroundImages } from "@/components/background-images";
 import { AppHeader } from "@/components/app-header";
 import { SearchInput } from "@/components/search/search-input";
+import { TokenGuide } from "@/components/token-guide";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
             <AppHeader />
             <SearchInput />
             <main>
+              <TokenGuide />
               <Suspense fallback={<RepositoryListSkeleton />}>
                 <RepositoryList />
               </Suspense>
