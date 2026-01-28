@@ -13,7 +13,7 @@ export function TokenGuide() {
   }
 
   return (
-    <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-border/60 bg-background/60 p-6">
+    <div className="mx-auto mt-8 max-w-2xl rounded-lg border border-border/60 bg-card/80 p-6">
       <div className="flex items-center gap-2">
         <Key className="h-5 w-5 text-muted-foreground" />
         <h2 className="text-base font-semibold">
