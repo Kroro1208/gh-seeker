@@ -61,23 +61,25 @@ export function RepositoryList() {
   if (error) {
     const { title, description, canRetry } = getErrorPresentation(error);
     return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>{title}</AlertTitle>
-        <AlertDescription className="mt-2 space-y-2">
-          <p>{description}</p>
-          {canRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlers.refetch}
-              className="mt-2"
-            >
-              再試行
-            </Button>
-          )}
-        </AlertDescription>
-      </Alert>
+      <div className="flex min-h-[20vh] w-full items-center justify-center px-4">
+        <Alert variant="destructive" className="w-full max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>{title}</AlertTitle>
+          <AlertDescription className="mt-2 space-y-2">
+            <p>{description}</p>
+            {canRetry && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlers.refetch}
+                className="mt-2"
+              >
+                再試行
+              </Button>
+            )}
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
