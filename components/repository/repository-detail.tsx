@@ -19,9 +19,10 @@ import {
   Calendar,
   Scale,
 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useQueryStates } from "nuqs";
 import { RepositoryCard } from "./repository-card";
 import { getErrorPresentation } from "@/lib/github/errors";
+import { searchParamsParsers, serializeSearchParams } from "@/lib/url";
 
 interface RepositoryDetailProps {
   owner: string;
@@ -29,11 +30,18 @@ interface RepositoryDetailProps {
 }
 
 export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
-  // ここは読み込むだけなのでnuqs使わない
-  const searchParams = useSearchParams();
-  const repoIdParam = searchParams.get("repoId");
-  const parsedRepoId = repoIdParam ? Number.parseInt(repoIdParam, 10) : NaN;
-  const repoId = Number.isFinite(parsedRepoId) ? parsedRepoId : undefined;
+  const [
+    {
+      repoId: repoIdParam,
+      q: searchQuery,
+      language,
+      sort,
+      order,
+      page,
+      per_page: perPage,
+    },
+  ] = useQueryStates(searchParamsParsers);
+  const repoId = repoIdParam ?? undefined;
 
   const { data, isLoading, error, refetch } = useRepository(
     owner,
@@ -42,7 +50,14 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
   );
   const relatedState = useRelatedRepositories(data, owner, repo);
 
-  const backHref = buildBackHref(searchParams);
+  const backHref = buildBackHref({
+    searchQuery,
+    language,
+    sort,
+    order,
+    page,
+    perPage,
+  });
 
   if (isLoading) {
     return <RepositoryDetailSkeleton />;
@@ -168,7 +183,17 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
       </Card>
 
       {/* 関連リポジトリ */}
-      {data.language && <RelatedRepositoriesSection state={relatedState} />}
+      {data.language && (
+        <RelatedRepositoriesSection
+          state={relatedState}
+          searchQuery={searchQuery}
+          language={language}
+          sort={sort}
+          order={order}
+          page={page}
+          perPage={perPage}
+        />
+      )}
     </div>
   );
 }
@@ -197,21 +222,22 @@ function StatItem({
 // 関連リポジトリセクション
 function RelatedRepositoriesSection({
   state,
+  searchQuery,
+  language,
+  sort,
+  order,
+  page,
+  perPage,
 }: {
   state: ReturnType<typeof useRelatedRepositories>;
+  searchQuery: string | null;
+  language: string | null;
+  sort: string | null;
+  order: string | null;
+  page: number | null;
+  perPage: number | null;
 }) {
-  const searchParams = useSearchParams();
   const { items, isLoading, error, hasResults } = state;
-
-  // 検索パラメータを抽出
-  const searchQuery = searchParams.get("q") || undefined;
-  const language = searchParams.get("language") || undefined;
-  const sort = searchParams.get("sort") || undefined;
-  const order = searchParams.get("order") || undefined;
-  const pageParam = searchParams.get("page");
-  const page = pageParam ? Number.parseInt(pageParam, 10) : undefined;
-  const perPageParam = searchParams.get("per_page");
-  const perPage = perPageParam ? Number.parseInt(perPageParam, 10) : undefined;
 
   return (
     <section className="space-y-4">
@@ -232,12 +258,12 @@ function RelatedRepositoriesSection({
             <RepositoryCard
               key={related.id}
               repository={related}
-              searchQuery={searchQuery}
-              language={language}
-              sort={sort}
-              order={order}
-              page={page}
-              perPage={perPage}
+              searchQuery={searchQuery ?? undefined}
+              language={language ?? undefined}
+              sort={sort ?? undefined}
+              order={order ?? undefined}
+              page={page ?? undefined}
+              perPage={perPage ?? undefined}
             />
           ))}
         </div>
@@ -251,18 +277,22 @@ function RelatedRepositoriesSection({
 }
 
 // 戻るリンクのURL構築
-function buildBackHref(searchParams: URLSearchParams): string {
-  const backParams = new URLSearchParams();
-  const keysToKeep = ["q", "language", "sort", "order", "page", "per_page"];
-
-  for (const key of keysToKeep) {
-    const value = searchParams.get(key);
-    if (value) {
-      backParams.set(key, value);
-    }
-  }
-
-  return backParams.toString() ? `/?${backParams.toString()}` : "/";
+function buildBackHref(params: {
+  searchQuery: string | null;
+  language: string | null;
+  sort: string | null;
+  order: string | null;
+  page: number | null;
+  perPage: number | null;
+}): string {
+  return serializeSearchParams("/", {
+    q: params.searchQuery?.trim() || null,
+    language: params.language || null,
+    sort: params.sort || null,
+    order: params.order || null,
+    page: Number.isFinite(params.page ?? NaN) ? params.page : null,
+    per_page: Number.isFinite(params.perPage ?? NaN) ? params.perPage : null,
+  });
 }
 
 function RepositoryDetailSkeleton() {
