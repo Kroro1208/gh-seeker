@@ -53,7 +53,7 @@ export function RepositoryListControls({
           言語
           <select
             name="language"
-            className="h-9 w-36 cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-9 w-48 cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
             value={language}
             onChange={(event) => onLanguageChange(event.target.value)}
             aria-label="言語フィルター"
