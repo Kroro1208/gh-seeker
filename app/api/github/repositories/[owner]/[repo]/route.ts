@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getRepository } from "@/lib/github/server-client";
 import { handleAPIError } from "@/lib/api/error-handler";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getSessionToken, getSessionIdentifier } from "@/lib/session";
 
 type RouteContext = {
   params: Promise<{
@@ -13,9 +14,9 @@ type RouteContext = {
 // 詳細取得API
 export async function GET(request: Request, { params }: RouteContext) {
   try {
-    // Rate Limitチェック
+    // セッションからidentifierを取得（トークンのハッシュ値）
     const identifier =
-      request.headers.get("x-github-token") ||
+      (await getSessionIdentifier()) ||
       request.headers.get("x-forwarded-for") ||
       "anonymous";
 
@@ -46,7 +47,8 @@ export async function GET(request: Request, { params }: RouteContext) {
     }
 
     const { owner = "", repo = "" } = await params;
-    const token = request.headers.get("x-github-token") ?? undefined;
+    // セッションからトークンを取得
+    const token = await getSessionToken();
     const data = await getRepository(owner, repo, token);
 
     // Rate Limit情報をレスポンスヘッダーに含める

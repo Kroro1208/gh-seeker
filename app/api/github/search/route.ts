@@ -3,13 +3,14 @@ import { searchRepositories } from "@/lib/github/server-client";
 import { parseSearchParams } from "@/lib/api/parsers";
 import { handleAPIError } from "@/lib/api/error-handler";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getSessionToken, getSessionIdentifier } from "@/lib/session";
 
 // 一覧取得API
 export async function GET(request: NextRequest) {
   try {
-    // Rate Limitチェック（IPアドレスまたはトークンをidentifierとして使用）
+    // セッションからidentifierを取得（トークンのハッシュ値）
     const identifier =
-      request.headers.get("x-github-token") ||
+      (await getSessionIdentifier()) ||
       request.headers.get("x-forwarded-for") ||
       "anonymous";
 
@@ -40,7 +41,8 @@ export async function GET(request: NextRequest) {
     }
 
     const params = parseSearchParams(request.nextUrl.searchParams);
-    const token = request.headers.get("x-github-token") ?? undefined;
+    // セッションからトークンを取得
+    const token = await getSessionToken();
     const data = await searchRepositories(params, token);
 
     // Rate Limit情報をレスポンスヘッダーに含める
