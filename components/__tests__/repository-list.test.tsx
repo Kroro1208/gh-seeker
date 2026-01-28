@@ -47,7 +47,10 @@ describe("RepositoryList", () => {
       pageSliceStart: 0,
       pageSliceEnd: 30,
     },
-    languageOptions: ["TypeScript", "JavaScript"],
+    languageOptions: [
+      { language: "TypeScript", count: 1 },
+      { language: "JavaScript", count: 1 },
+    ],
     isLoading: false,
     isFetching: false,
     error: null,

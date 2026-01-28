@@ -11,7 +11,12 @@ describe("RepositoryListControls", () => {
     displayedCount: 30,
   };
 
-  const mockLanguageOptions = ["TypeScript", "JavaScript", "Python", "Go"];
+  const mockLanguageOptions = [
+    { language: "TypeScript", count: 12 },
+    { language: "JavaScript", count: 8 },
+    { language: "Python", count: 4 },
+    { language: "Go", count: 2 },
+  ];
 
   const defaultProps = {
     pagination: mockPagination,
@@ -73,10 +78,10 @@ describe("RepositoryListControls", () => {
     expect(languageSelect).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "すべて" })).toBeInTheDocument();
     expect(
-      screen.getByRole("option", { name: "TypeScript" }),
+      screen.getByRole("option", { name: "TypeScript (12)" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("option", { name: "JavaScript" }),
+      screen.getByRole("option", { name: "JavaScript (8)" }),
     ).toBeInTheDocument();
   });
 
