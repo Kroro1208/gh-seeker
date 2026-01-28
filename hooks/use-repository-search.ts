@@ -7,24 +7,14 @@ import { useSearchRepositories } from "@/lib/github/use-search-repository";
 import { searchRepositories } from "@/lib/github/client";
 import { SearchRepositoriesParams, Repository } from "@/lib/github/types";
 import {
-  computePaginationMetrics,
-  PaginationMetrics,
-} from "@/lib/search/pagination";
-
-const SORT_OPTIONS = ["stars", "updated", "forks"] satisfies Array<
-  SearchRepositoriesParams["sort"]
->;
-
-// sortオプションかどうかを判定する型ガード
-function isSortOption(
-  value: string | undefined,
-): value is SearchRepositoriesParams["sort"] {
-  return SORT_OPTIONS.some((option) => option === value);
-}
-
-const API_PER_PAGE = 100;
-const MAX_SEARCH_RESULTS = 1000;
-const ALLOWED_PER_PAGE = new Set([10, 30, 50]);
+  API_PER_PAGE,
+  SORT_OPTIONS,
+  buildSearchRepositoriesParams,
+  computeBasePaginationMetrics,
+  deriveRepositorySearchState,
+  normalizeRepositorySearchInput,
+} from "@/lib/search/repository-search-logic";
+import { PaginationMetrics } from "@/lib/search/pagination";
 
 export type RepositorySearchState = {
   query: string;
@@ -39,7 +29,7 @@ export type RepositorySearchState = {
   hasResults: boolean;
   isLanguageFilterActive: boolean;
   normalizedSort: SearchRepositoriesParams["sort"];
-  normalizedOrder: string;
+  normalizedOrder: SearchRepositoriesParams["order"];
   normalizedPerPage: number;
   language: string;
   resultsRef: React.RefObject<HTMLDivElement | null>;
@@ -75,32 +65,33 @@ export function useRepositorySearch(): UseRepositorySearchResult {
 
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  // 正規化された値を計算
-  const normalizedSort = isSortOption(sort) ? sort : undefined;
-  const normalizedOrder = normalizedSort ? "desc" : "";
-  const parsedPage = Number.parseInt(page, 10);
-  const normalizedPage =
-    Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-  const parsedPerPage = Number.parseInt(perPage, 10);
-  const normalizedPerPage = ALLOWED_PER_PAGE.has(parsedPerPage)
-    ? parsedPerPage
-    : 30;
-
-  const trimmedQuery = query.trim();
-  const trimmedLanguage = language.trim();
-  const isLanguageFilterActive = trimmedLanguage !== "";
+  const {
+    normalizedSort,
+    normalizedOrder,
+    normalizedPage,
+    normalizedPerPage,
+    trimmedQuery,
+    trimmedLanguage,
+    isLanguageFilterActive,
+    hasQuery,
+  } = useMemo(
+    () =>
+      normalizeRepositorySearchInput({
+        query,
+        sort,
+        page,
+        perPage,
+        language,
+      }),
+    [query, sort, page, perPage, language],
+  );
 
   // ベースのページネーション計算
   const basePagination = useMemo(
     () =>
-      computePaginationMetrics({
-        page: normalizedPage,
-        perPage: normalizedPerPage,
-        totalCount: MAX_SEARCH_RESULTS,
-        filteredCount: 0,
-        isFiltered: false,
-        apiPerPage: API_PER_PAGE,
-        maxSearchResults: MAX_SEARCH_RESULTS,
+      computeBasePaginationMetrics({
+        normalizedPage,
+        normalizedPerPage,
       }),
     [normalizedPage, normalizedPerPage],
   );
@@ -108,11 +99,12 @@ export function useRepositorySearch(): UseRepositorySearchResult {
   // 検索パラメータ
   const currentParams: SearchRepositoriesParams = useMemo(
     () => ({
-      q: query,
-      sort: normalizedSort || undefined,
-      order: normalizedOrder || undefined,
-      page: basePagination.apiPage,
-      per_page: API_PER_PAGE,
+      ...buildSearchRepositoriesParams({
+        query,
+        normalizedSort,
+        normalizedOrder,
+        apiPage: basePagination.apiPage,
+      }),
     }),
     [query, normalizedSort, normalizedOrder, basePagination.apiPage],
   );
@@ -150,52 +142,28 @@ export function useRepositorySearch(): UseRepositorySearchResult {
     trimmedQuery,
   ]);
 
-  // 言語オプションを抽出
-  const languageOptions = useMemo(() => {
-    if (!data?.items) return [];
-    return [
-      ...new Set(
-        data.items
-          .map((repo) => repo.language)
-          .filter((lang): lang is string => lang != null),
-      ),
-    ].sort((a, b) => a.localeCompare(b));
-  }, [data]);
-
-  // フィルタリングされたアイテム
-  const filteredItems = useMemo(() => {
-    if (!data?.items) return [];
-    if (!trimmedLanguage) return data.items;
-    return data.items.filter(
-      (repo) => repo.language?.toLowerCase() === trimmedLanguage.toLowerCase(),
-    );
-  }, [data, trimmedLanguage]);
-
-  // ページネーション計算
-  const pagination = useMemo(() => {
-    const totalCount = data?.total_count ?? 0;
-    return computePaginationMetrics({
-      page: normalizedPage,
-      perPage: normalizedPerPage,
-      totalCount,
-      filteredCount: filteredItems.length,
-      isFiltered: isLanguageFilterActive,
-      apiPerPage: API_PER_PAGE,
-      maxSearchResults: MAX_SEARCH_RESULTS,
-    });
-  }, [
-    data?.total_count,
-    normalizedPage,
-    normalizedPerPage,
-    filteredItems.length,
-    isLanguageFilterActive,
-  ]);
-
-  // ページネートされたアイテム
-  const paginatedItems = useMemo(
+  const {
+    languageOptions,
+    filteredItems,
+    pagination,
+    paginatedItems,
+    hasResults,
+  } = useMemo(
     () =>
-      filteredItems.slice(pagination.pageSliceStart, pagination.pageSliceEnd),
-    [filteredItems, pagination.pageSliceStart, pagination.pageSliceEnd],
+      deriveRepositorySearchState({
+        data,
+        normalizedPage,
+        normalizedPerPage,
+        trimmedLanguage,
+        isLanguageFilterActive,
+      }),
+    [
+      data,
+      normalizedPage,
+      normalizedPerPage,
+      trimmedLanguage,
+      isLanguageFilterActive,
+    ],
   );
 
   // ハンドラー
@@ -230,8 +198,8 @@ export function useRepositorySearch(): UseRepositorySearchResult {
       isLoading,
       isFetching,
       error: error as Error | null,
-      hasQuery: Boolean(trimmedQuery),
-      hasResults: Boolean(data && data.items.length > 0),
+      hasQuery,
+      hasResults,
       isLanguageFilterActive,
       normalizedSort,
       normalizedOrder,
