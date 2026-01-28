@@ -19,8 +19,22 @@ export const RATE_LIMIT_CONFIG = {
   MAX_REQUESTS: 10,
 } as const;
 
+// 内部APIルート
+export const API_ROUTES = {
+  AUTH: {
+    TOKEN: "/api/auth/token",
+  },
+  GITHUB: {
+    BASE: "/api/github",
+    SEARCH: "/api/github/search",
+    REPOSITORY: (owner: string, repo: string) =>
+      `/api/github/repositories/${owner}/${repo}`,
+  },
+} as const;
+
 // アプリケーション全体の設定
 export const APP_CONFIG = {
   GITHUB: GITHUB_CONFIG,
   RATE_LIMIT: RATE_LIMIT_CONFIG,
+  API_ROUTES,
 } as const;

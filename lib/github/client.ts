@@ -14,8 +14,7 @@ import {
   GitHubResponseFormatError,
 } from "./errors";
 import { HttpClient, defaultHttpClient } from "@/lib/http/client";
-
-const API_BASE_PATH = "/api/github";
+import { API_ROUTES } from "@/lib/config";
 
 // GitHub APIクライアントの設定
 export type GitHubClientConfig = {
@@ -26,7 +25,8 @@ export type GitHubClientConfig = {
 // GitHub APIクライアントを作成
 // テスト時にhttpClientを注入可能にする
 export function createGitHubClient(config: GitHubClientConfig = {}) {
-  const { httpClient = defaultHttpClient, basePath = API_BASE_PATH } = config;
+  const { httpClient = defaultHttpClient, basePath = API_ROUTES.GITHUB.BASE } =
+    config;
 
   // ここでラップしてエラー処理、JSON パースなどを一箇所に集約する
   // UI層に不正なデータを漏らさない

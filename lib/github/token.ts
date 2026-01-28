@@ -1,4 +1,5 @@
 import { logger, serializeError } from "@/lib/logger";
+import { API_ROUTES } from "@/lib/config";
 
 // トークンをサーバーセッションに保存
 export async function setGitHubToken(token: string): Promise<boolean> {
@@ -7,11 +8,11 @@ export async function setGitHubToken(token: string): Promise<boolean> {
 
     if (!trimmed) {
       // 空の場合は削除
-      const res = await fetch("/api/auth/token", { method: "DELETE" });
+      const res = await fetch(API_ROUTES.AUTH.TOKEN, { method: "DELETE" });
       return res.ok;
     }
 
-    const res = await fetch("/api/auth/token", {
+    const res = await fetch(API_ROUTES.AUTH.TOKEN, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token: trimmed }),
@@ -33,7 +34,7 @@ export async function setGitHubToken(token: string): Promise<boolean> {
 // トークンの存在確認（値は取得しない）
 export async function hasGitHubToken(): Promise<boolean> {
   try {
-    const res = await fetch("/api/auth/token");
+    const res = await fetch(API_ROUTES.AUTH.TOKEN);
     if (!res.ok) return false;
     const data = await res.json();
     return Boolean(data.hasToken);
@@ -45,7 +46,7 @@ export async function hasGitHubToken(): Promise<boolean> {
 // トークンを削除
 export async function clearGitHubToken(): Promise<boolean> {
   try {
-    const res = await fetch("/api/auth/token", { method: "DELETE" });
+    const res = await fetch(API_ROUTES.AUTH.TOKEN, { method: "DELETE" });
     return res.ok;
   } catch (error) {
     logger.error("トークン削除エラー", { error: serializeError(error) });
