@@ -127,7 +127,7 @@ describe("RepositoryList", () => {
     render(<RepositoryList />);
 
     // Assert: getErrorPresentation の実際の出力に基づく
-    expect(screen.getByText("エラーが発生しました")).toBeInTheDocument();
+    expect(screen.getByText("エラーが発生しました。")).toBeInTheDocument();
     expect(screen.getByText("Unexpected error")).toBeInTheDocument();
     expect(screen.getByText("再試行")).toBeInTheDocument();
   });

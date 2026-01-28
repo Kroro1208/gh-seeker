@@ -18,7 +18,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("入力エラーです");
+      expect(result.title).toBe("入力エラーです。");
       expect(result.description).toBe("検索クエリが空です");
       expect(result.canRetry).toBe(false);
     });
@@ -33,7 +33,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("ネットワークエラーです");
+      expect(result.title).toBe("ネットワークエラーです。");
       expect(result.description).toBe("通信状況を確認して再試行してください。");
       expect(result.canRetry).toBe(true);
     });
@@ -48,7 +48,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("レスポンス形式が不正です");
+      expect(result.title).toBe("レスポンス形式が不正です。");
       expect(result.description).toBe("時間をおいて再試行してください。");
       expect(result.canRetry).toBe(true);
     });
@@ -63,7 +63,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("データが見つかりません");
+      expect(result.title).toBe("データが見つかりませんでした。");
       expect(result.description).toBe("リポジトリが見つかりません");
       expect(result.canRetry).toBe(false);
     });
@@ -76,7 +76,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("APIエラーが発生しました");
+      expect(result.title).toBe("APIエラーが発生しました。");
       expect(result.description).toBe("サーバーエラー");
       expect(result.canRetry).toBe(true);
     });
@@ -89,7 +89,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("APIエラーが発生しました");
+      expect(result.title).toBe("APIエラーが発生しました。");
       expect(result.canRetry).toBe(true);
     });
 
@@ -101,7 +101,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("APIエラーが発生しました");
+      expect(result.title).toBe("APIエラーが発生しました。");
       expect(result.canRetry).toBe(false);
     });
 
@@ -137,7 +137,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("エラーが発生しました");
+      expect(result.title).toBe("エラーが発生しました。");
       expect(result.description).toBe("予期しないエラー");
       expect(result.canRetry).toBe(true);
     });
@@ -152,7 +152,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(error);
 
       // Assert
-      expect(result.title).toBe("エラーが発生しました");
+      expect(result.title).toBe("エラーが発生しました。");
       expect(result.description).toBe("不明なエラーです");
       expect(result.canRetry).toBe(true);
     });
@@ -162,7 +162,7 @@ describe("getErrorPresentation", () => {
       const result = getErrorPresentation(null);
 
       // Assert
-      expect(result.title).toBe("エラーが発生しました");
+      expect(result.title).toBe("エラーが発生しました。");
       expect(result.description).toBe("不明なエラーです");
     });
 
