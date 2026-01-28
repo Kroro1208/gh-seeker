@@ -1,6 +1,7 @@
 "use client";
 
 import { SearchRepositoriesParams } from "@/lib/github/types";
+import { LanguageOption } from "@/lib/search/repository-search-logic";
 import { Pagination } from "./pagination";
 
 type RepositoryListControlsProps = {
@@ -13,7 +14,7 @@ type RepositoryListControlsProps = {
   normalizedPerPage: number;
   normalizedSort: SearchRepositoriesParams["sort"] | "";
   language: string;
-  languageOptions: string[];
+  languageOptions: LanguageOption[];
   onPageChange: (nextPage: number) => void;
   onLanguageChange: (nextLanguage: string) => void;
   onSortChange: (nextSort: string) => void;
@@ -59,8 +60,8 @@ export function RepositoryListControls({
           >
             <option value="">すべて</option>
             {languageOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
+              <option key={option.language} value={option.language}>
+                {option.language} ({option.count.toLocaleString()})
               </option>
             ))}
           </select>

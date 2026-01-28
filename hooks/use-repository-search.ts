@@ -9,6 +9,7 @@ import { SearchRepositoriesParams, Repository } from "@/lib/github/types";
 import {
   API_PER_PAGE,
   SORT_OPTIONS,
+  LanguageOption,
   buildSearchRepositoriesParams,
   computeBasePaginationMetrics,
   deriveRepositorySearchState,
@@ -21,7 +22,7 @@ export type RepositorySearchState = {
   paginatedItems: Repository[];
   filteredItems: Repository[];
   pagination: PaginationMetrics;
-  languageOptions: string[];
+  languageOptions: LanguageOption[];
   isLoading: boolean;
   isFetching: boolean;
   error: Error | null;

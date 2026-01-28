@@ -28,11 +28,16 @@ export type NormalizedSearchInput = {
 };
 
 export type RepositorySearchDerivedState = {
-  languageOptions: string[];
+  languageOptions: LanguageOption[];
   filteredItems: Repository[];
   pagination: PaginationMetrics;
   paginatedItems: Repository[];
   hasResults: boolean;
+};
+
+export type LanguageOption = {
+  language: string;
+  count: number;
 };
 
 // sortオプションかどうかを判定する型ガード
@@ -119,15 +124,21 @@ export function buildSearchRepositoriesParams({
   };
 }
 
-export function getLanguageOptions(items: Repository[] | undefined): string[] {
+export function getLanguageOptions(
+  items: Repository[] | undefined,
+): LanguageOption[] {
   if (!items) return [];
-  return [
-    ...new Set(
-      items
-        .map((repo) => repo.language)
-        .filter((lang): lang is string => lang != null),
-    ),
-  ].sort((a, b) => a.localeCompare(b));
+  const counts = new Map<string, number>();
+
+  // 言語ごとの出現回数をカウントしてMapに格納
+  for (const repo of items) {
+    if (!repo.language) continue;
+    counts.set(repo.language, (counts.get(repo.language) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([language, count]) => ({ language, count }))
+    .sort((a, b) => a.language.localeCompare(b.language));
 }
 
 export function filterRepositoriesByLanguage(
