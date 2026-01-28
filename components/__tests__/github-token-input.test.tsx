@@ -243,7 +243,12 @@ describe("GitHubTokenInput", () => {
     // Act
     const { container } = render(<GitHubTokenInput className="custom-class" />);
 
-    // Assert
+    // Assert: ローディング完了を待ってからクラス確認
+    await waitFor(() => {
+      expect(
+        screen.getByLabelText("GitHub Personal Access Token"),
+      ).toBeInTheDocument();
+    });
     expect(container.firstChild).toHaveClass("custom-class");
   });
 });

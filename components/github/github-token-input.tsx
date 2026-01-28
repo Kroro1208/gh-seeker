@@ -12,7 +12,7 @@ type GitHubTokenInputProps = {
 
 export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
   const [token, setToken] = useState("");
-  const [hasToken, setHasToken] = useState(false);
+  const [hasToken, setHasToken] = useState<boolean | null>(null); // null = 確認中
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,6 +20,8 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
   useEffect(() => {
     hasGitHubToken().then(setHasToken);
   }, []);
+
+  const isLoading = hasToken === null;
 
   const handleSave = useCallback(async () => {
     if (!token.trim()) return;
@@ -50,7 +52,9 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
     <div className={className}>
       <label className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
         <span className="whitespace-nowrap">GitHub Token</span>
-        {hasToken ? (
+        {isLoading ? (
+          <span className="text-muted-foreground">確認中...</span>
+        ) : hasToken ? (
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-green-600">
               <Check className="h-4 w-4" />
