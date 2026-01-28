@@ -1,129 +1,249 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GitHubTokenInput } from "../github/github-token-input";
 
+// fetch をモック（システム境界）
+const mockFetch = vi.fn();
+
 describe("GitHubTokenInput", () => {
   beforeEach(() => {
-    // sessionStorage をクリア
-    sessionStorage.clear();
+    vi.clearAllMocks();
+    global.fetch = mockFetch;
   });
 
-  it("初期表示時にラベルと説明文が表示される", () => {
-    // Act
-    render(<GitHubTokenInput />);
-
-    // Assert
-    expect(screen.getByText("GitHub Token")).toBeInTheDocument();
-    expect(
-      screen.getByText(/GitHub API リクエストにのみ使われます/),
-    ).toBeInTheDocument();
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it("sessionStorageにトークンがある場合、初期値として表示される", () => {
+  describe("トークン未設定時", () => {
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ hasToken: false }),
+      });
+    });
+
+    it("入力欄と保存ボタンが表示される", async () => {
+      // Act
+      render(<GitHubTokenInput />);
+
+      // Assert: 観察可能なUIを検証
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText("GitHub Personal Access Token"),
+        ).toBeInTheDocument();
+      });
+      expect(screen.getByRole("button", { name: "保存" })).toBeInTheDocument();
+    });
+
+    it("入力欄はパスワード型でプレースホルダーがある", async () => {
+      // Act
+      render(<GitHubTokenInput />);
+
+      // Assert
+      await waitFor(() => {
+        const input = screen.getByLabelText("GitHub Personal Access Token");
+        expect(input).toHaveAttribute("type", "password");
+        expect(input).toHaveAttribute("placeholder", "ghp_...");
+      });
+    });
+
+    it("空欄では保存ボタンが無効、入力すると有効になる", async () => {
+      // Arrange
+      const user = userEvent.setup();
+      render(<GitHubTokenInput />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText("GitHub Personal Access Token"),
+        ).toBeInTheDocument();
+      });
+
+      // Assert: 空欄では無効
+      const button = screen.getByRole("button", { name: "保存" });
+      expect(button).toBeDisabled();
+
+      // Act: 入力
+      const input = screen.getByLabelText("GitHub Personal Access Token");
+      await user.type(input, "ghp_test");
+
+      // Assert: 有効になる
+      expect(button).not.toBeDisabled();
+    });
+
+    it("保存成功後に設定済み表示になる", async () => {
+      // Arrange
+      const user = userEvent.setup();
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hasToken: false }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ success: true }),
+        });
+
+      render(<GitHubTokenInput />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText("GitHub Personal Access Token"),
+        ).toBeInTheDocument();
+      });
+
+      const input = screen.getByLabelText("GitHub Personal Access Token");
+      await user.type(input, "ghp_test123456789012345678901234567890");
+
+      // Act
+      const button = screen.getByRole("button", { name: "保存" });
+      await user.click(button);
+
+      // Assert: 観察可能な結果（DOMの変化）を検証
+      await waitFor(() => {
+        expect(screen.getByText("設定済み")).toBeInTheDocument();
+      });
+      expect(screen.getByText("クリア")).toBeInTheDocument();
+    });
+
+    it("Enterキーで保存できる", async () => {
+      // Arrange
+      const user = userEvent.setup();
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hasToken: false }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ success: true }),
+        });
+
+      render(<GitHubTokenInput />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText("GitHub Personal Access Token"),
+        ).toBeInTheDocument();
+      });
+
+      const input = screen.getByLabelText("GitHub Personal Access Token");
+      await user.type(input, "ghp_test123456789012345678901234567890");
+
+      // Act
+      await user.keyboard("{Enter}");
+
+      // Assert: 設定済みになる
+      await waitFor(() => {
+        expect(screen.getByText("設定済み")).toBeInTheDocument();
+      });
+    });
+
+    it("保存失敗時にエラーメッセージが表示される", async () => {
+      // Arrange
+      const user = userEvent.setup();
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hasToken: false }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          json: async () => ({ error: "Invalid token" }),
+        });
+
+      render(<GitHubTokenInput />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText("GitHub Personal Access Token"),
+        ).toBeInTheDocument();
+      });
+
+      const input = screen.getByLabelText("GitHub Personal Access Token");
+      await user.type(input, "invalid_token");
+
+      const button = screen.getByRole("button", { name: "保存" });
+      await user.click(button);
+
+      // Assert: エラーメッセージが表示される
+      await waitFor(() => {
+        expect(screen.getByText(/保存に失敗しました/)).toBeInTheDocument();
+      });
+      // 入力欄は残る（設定済みにならない）
+      expect(
+        screen.getByLabelText("GitHub Personal Access Token"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  describe("トークン設定済み時", () => {
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ hasToken: true }),
+      });
+    });
+
+    it("設定済み表示とクリアボタンが表示され、入力欄は非表示", async () => {
+      // Act
+      render(<GitHubTokenInput />);
+
+      // Assert
+      await waitFor(() => {
+        expect(screen.getByText("設定済み")).toBeInTheDocument();
+      });
+      expect(screen.getByText("クリア")).toBeInTheDocument();
+      expect(
+        screen.queryByLabelText("GitHub Personal Access Token"),
+      ).not.toBeInTheDocument();
+    });
+
+    it("クリア後に入力欄が表示される", async () => {
+      // Arrange
+      const user = userEvent.setup();
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ hasToken: true }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ success: true }),
+        });
+
+      render(<GitHubTokenInput />);
+
+      await waitFor(() => {
+        expect(screen.getByText("クリア")).toBeInTheDocument();
+      });
+
+      // Act
+      const clearButton = screen.getByText("クリア");
+      await user.click(clearButton);
+
+      // Assert: 入力欄が再表示される
+      await waitFor(() => {
+        expect(
+          screen.getByLabelText("GitHub Personal Access Token"),
+        ).toBeInTheDocument();
+      });
+      expect(screen.queryByText("設定済み")).not.toBeInTheDocument();
+    });
+  });
+
+  it("className が適用される", async () => {
     // Arrange
-    sessionStorage.setItem("github_token", "ghp_existing_token");
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ hasToken: false }),
+    });
 
-    // Act
-    render(<GitHubTokenInput />);
-
-    // Assert
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-    expect(input).toHaveValue("ghp_existing_token");
-  });
-
-  it("sessionStorageにトークンがない場合、空の入力欄が表示される", () => {
-    // Act
-    render(<GitHubTokenInput />);
-
-    // Assert
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-    expect(input).toHaveValue("");
-  });
-
-  it("ユーザーがトークンを入力すると表示が更新される", async () => {
-    // Arrange
-    const user = userEvent.setup();
-    render(<GitHubTokenInput />);
-
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-
-    // Act
-    await user.type(input, "ghp_new_token_123");
-
-    // Assert
-    expect(input).toHaveValue("ghp_new_token_123");
-  });
-
-  it("ユーザーが入力すると sessionStorage に保存される", async () => {
-    // Arrange
-    const user = userEvent.setup();
-    render(<GitHubTokenInput />);
-
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-
-    // Act
-    await user.type(input, "ghp_test");
-
-    // Assert: sessionStorage に実際に保存されているか確認
-    expect(sessionStorage.getItem("github_token")).toBe("ghp_test");
-  });
-
-  it("入力を削除すると sessionStorage からも削除される", async () => {
-    // Arrange
-    sessionStorage.setItem("github_token", "ghp_existing");
-    const user = userEvent.setup();
-    render(<GitHubTokenInput />);
-
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-
-    // Act: 既存の値をクリアして空にする
-    await user.clear(input);
-
-    // Assert
-    expect(input).toHaveValue("");
-    expect(sessionStorage.getItem("github_token")).toBeNull();
-  });
-
-  it("入力欄の type 属性が password である", () => {
-    // Act
-    render(<GitHubTokenInput />);
-
-    // Assert
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-    expect(input).toHaveAttribute("type", "password");
-  });
-
-  it("placeholder が表示される", () => {
-    // Act
-    render(<GitHubTokenInput />);
-
-    // Assert
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-    expect(input).toHaveAttribute("placeholder", "ghp_...");
-  });
-
-  it("className が適用される", () => {
     // Act
     const { container } = render(<GitHubTokenInput className="custom-class" />);
 
     // Assert
     expect(container.firstChild).toHaveClass("custom-class");
-  });
-
-  it("空白のみの入力はトリミングされて削除扱いになる", async () => {
-    // Arrange
-    sessionStorage.setItem("github_token", "ghp_existing");
-    const user = userEvent.setup();
-    render(<GitHubTokenInput />);
-
-    const input = screen.getByLabelText("GitHub Personal Access Token");
-
-    // Act: 既存の値をクリアして空白を入力
-    await user.clear(input);
-    await user.type(input, "   ");
-
-    // Assert: 空白のみの場合、トリミングされて削除される
-    expect(sessionStorage.getItem("github_token")).toBeNull();
   });
 });

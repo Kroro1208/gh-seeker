@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createGitHubClient } from "../github/client";
 import {
   GitHubAPIError,
@@ -7,13 +7,6 @@ import {
   GitHubResponseFormatError,
 } from "../github/errors";
 import type { HttpClient } from "../http/client";
-
-// getGitHubToken をモック
-vi.mock("../github/token", () => ({
-  getGitHubToken: vi.fn(() => null),
-}));
-
-import { getGitHubToken } from "../github/token";
 
 // モック用のHttpClientを作成するヘルパー
 function createMockHttpClient(
@@ -73,10 +66,6 @@ const mockSearchResponse = {
 };
 
 describe("createGitHubClient", () => {
-  beforeEach(() => {
-    vi.mocked(getGitHubToken).mockReturnValue(null);
-  });
-
   describe("searchRepositories", () => {
     it("成功時にリポジトリ一覧を返す", async () => {
       // Arrange
@@ -199,28 +188,8 @@ describe("createGitHubClient", () => {
       );
     });
 
-    it("トークンがある場合にヘッダーに含める", async () => {
-      // Arrange
-      vi.mocked(getGitHubToken).mockReturnValue("ghp_test_token");
-      let capturedInit: RequestInit | undefined;
-      const mockFetch = vi
-        .fn()
-        .mockImplementation((_url: string, init?: RequestInit) => {
-          capturedInit = init;
-          return Promise.resolve(createSuccessResponse(mockSearchResponse));
-        });
-      const client = createGitHubClient({
-        httpClient: createMockHttpClient(mockFetch),
-      });
-
-      // Act
-      await client.searchRepositories({ q: "test" });
-
-      // Assert
-      expect(capturedInit?.headers).toEqual({
-        "X-GitHub-Token": "ghp_test_token",
-      });
-    });
+    // Note: トークンはHttpOnlyセッションCookieで自動送信されるため、
+    // クライアント側でのヘッダー設定テストは不要
   });
 
   describe("getRepository", () => {
