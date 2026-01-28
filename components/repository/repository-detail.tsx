@@ -199,7 +199,18 @@ function RelatedRepositoriesSection({
 }: {
   state: ReturnType<typeof useRelatedRepositories>;
 }) {
+  const searchParams = useSearchParams();
   const { items, isLoading, error, hasResults } = state;
+
+  // 検索パラメータを抽出
+  const searchQuery = searchParams.get("q") || undefined;
+  const language = searchParams.get("language") || undefined;
+  const sort = searchParams.get("sort") || undefined;
+  const order = searchParams.get("order") || undefined;
+  const pageParam = searchParams.get("page");
+  const page = pageParam ? Number.parseInt(pageParam, 10) : undefined;
+  const perPageParam = searchParams.get("per_page");
+  const perPage = perPageParam ? Number.parseInt(perPageParam, 10) : undefined;
 
   return (
     <section className="space-y-4">
@@ -217,7 +228,16 @@ function RelatedRepositoriesSection({
       ) : hasResults ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {items.map((related) => (
-            <RepositoryCard key={related.id} repository={related} />
+            <RepositoryCard
+              key={related.id}
+              repository={related}
+              searchQuery={searchQuery}
+              language={language}
+              sort={sort}
+              order={order}
+              page={page}
+              perPage={perPage}
+            />
           ))}
         </div>
       ) : (
