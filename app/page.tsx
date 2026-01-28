@@ -8,7 +8,7 @@ import { TokenGuide } from "@/components/token-guide";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen home-wood">
       <div className="relative min-h-screen overflow-hidden">
         <Suspense fallback={null}>
           <BackgroundImages />
