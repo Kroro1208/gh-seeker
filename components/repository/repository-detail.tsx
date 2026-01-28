@@ -29,6 +29,7 @@ interface RepositoryDetailProps {
 }
 
 export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
+  // ここは読み込むだけなのでnuqs使わない
   const searchParams = useSearchParams();
   const repoIdParam = searchParams.get("repoId");
   const parsedRepoId = repoIdParam ? Number.parseInt(repoIdParam, 10) : NaN;
