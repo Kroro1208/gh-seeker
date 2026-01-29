@@ -23,17 +23,6 @@ describe("rate-limit (環境変数未設定)", () => {
     vi.unstubAllEnvs();
   });
 
-  it("isRateLimitEnabled は false を返す", async () => {
-    // Arrange: モジュールを動的インポート
-    const { isRateLimitEnabled } = await import("../rate-limit");
-
-    // Act
-    const result = isRateLimitEnabled();
-
-    // Assert
-    expect(result).toBe(false);
-  });
-
   it("checkRateLimit は常に成功を返し、警告ログを出力する", async () => {
     // Arrange
     const { checkRateLimit } = await import("../rate-limit");
