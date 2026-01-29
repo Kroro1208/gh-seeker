@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -10,6 +11,20 @@ export function SearchInput() {
   const { state, handlers } = useSearchForm();
   const { inputValue, validationError } = state;
   const { setInputValue, handleSubmit, clearValidationError } = handlers;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const focusInputEnd = () => {
+    const input = inputRef.current;
+    if (!input) return;
+    input.focus();
+    const length = input.value.length;
+    // 開始位置と終了位置を同じにすることで、カーソルを末尾に移動
+    input.setSelectionRange(length, length);
+  };
+
+  useEffect(() => {
+    focusInputEnd();
+  }, []);
 
   return (
     <div className="w-full space-y-2">
@@ -25,6 +40,7 @@ export function SearchInput() {
             onChange={(event) => setInputValue(event.target.value)}
             className="pl-9"
             aria-label="リポジトリ検索"
+            ref={inputRef}
           />
         </div>
         <Button type="submit" className="cursor-pointer">
@@ -40,6 +56,9 @@ export function SearchInput() {
         onSelectTemplate={(value) => {
           setInputValue(value);
           clearValidationError();
+          requestAnimationFrame(() => {
+            focusInputEnd();
+          });
         }}
       />
     </div>
