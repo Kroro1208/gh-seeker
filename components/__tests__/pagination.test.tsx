@@ -2,6 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Pagination } from "../repository/pagination";
+import { IntlWrapper } from "@/test-utils/intl-wrapper";
+
+const renderWithIntl = (ui: React.ReactElement) =>
+  render(<IntlWrapper>{ui}</IntlWrapper>);
 
 describe("Pagination", () => {
   it("前へボタンと次へボタンが表示される", () => {
@@ -9,7 +13,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={1}
         totalPages={10}
@@ -27,7 +31,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination currentPage={3} totalPages={5} onPageChange={onPageChange} />,
     );
 
@@ -44,7 +48,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination currentPage={3} totalPages={5} onPageChange={onPageChange} />,
     );
 
@@ -61,7 +65,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={5}
         totalPages={10}
@@ -81,7 +85,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={5}
         totalPages={10}
@@ -101,7 +105,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <Pagination currentPage={1} totalPages={5} onPageChange={onPageChange} />,
     );
 
@@ -117,7 +121,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={1}
         totalPages={10}
@@ -134,7 +138,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={10}
         totalPages={10}
@@ -151,7 +155,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={5}
         totalPages={20}
@@ -169,7 +173,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={5}
         totalPages={20}
@@ -186,7 +190,7 @@ describe("Pagination", () => {
     // Arrange
     const onPageChange = vi.fn();
 
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={1}
         totalPages={10}
@@ -204,7 +208,7 @@ describe("Pagination", () => {
     // Arrange
     const onPageChange = vi.fn();
 
-    render(
+    renderWithIntl(
       <Pagination
         currentPage={10}
         totalPages={10}
@@ -223,7 +227,7 @@ describe("Pagination", () => {
     const onPageChange = vi.fn();
 
     // Act
-    const { container } = render(
+    const { container } = renderWithIntl(
       <Pagination
         currentPage={1}
         totalPages={5}

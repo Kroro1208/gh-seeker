@@ -2,6 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RepositoryListControls } from "../repository/repository-list-controls";
+import { IntlWrapper } from "@/test-utils/intl-wrapper";
+
+const renderWithIntl = (ui: React.ReactElement) =>
+  render(<IntlWrapper>{ui}</IntlWrapper>);
 
 describe("RepositoryListControls", () => {
   const mockPagination = {
@@ -32,7 +36,7 @@ describe("RepositoryListControls", () => {
 
   it("表示件数が表示される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} />);
+    renderWithIntl(<RepositoryListControls {...defaultProps} />);
 
     // Assert
     expect(screen.getByText("30 件表示 / 150 件")).toBeInTheDocument();
@@ -40,7 +44,7 @@ describe("RepositoryListControls", () => {
 
   it("ページネーションが表示される（totalPages > 1の場合）", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} />);
+    renderWithIntl(<RepositoryListControls {...defaultProps} />);
 
     // Assert
     expect(screen.getByText("前へ")).toBeInTheDocument();
@@ -57,7 +61,7 @@ describe("RepositoryListControls", () => {
     };
 
     // Act
-    render(
+    renderWithIntl(
       <RepositoryListControls
         {...defaultProps}
         pagination={singlePagePagination}
@@ -71,7 +75,7 @@ describe("RepositoryListControls", () => {
 
   it("言語フィルターが表示される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} />);
+    renderWithIntl(<RepositoryListControls {...defaultProps} />);
 
     // Assert
     const languageSelect = screen.getByLabelText("言語フィルター");
@@ -87,7 +91,7 @@ describe("RepositoryListControls", () => {
 
   it("ソート選択が表示される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} />);
+    renderWithIntl(<RepositoryListControls {...defaultProps} />);
 
     // Assert
     const sortSelect = screen.getByLabelText("ソート");
@@ -108,7 +112,7 @@ describe("RepositoryListControls", () => {
 
   it("表示件数選択が表示される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} />);
+    renderWithIntl(<RepositoryListControls {...defaultProps} />);
 
     // Assert
     const perPageSelect = screen.getByLabelText("1ページあたりの表示件数");
@@ -123,7 +127,7 @@ describe("RepositoryListControls", () => {
     const onLanguageChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <RepositoryListControls
         {...defaultProps}
         onLanguageChange={onLanguageChange}
@@ -145,7 +149,7 @@ describe("RepositoryListControls", () => {
     const onSortChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <RepositoryListControls {...defaultProps} onSortChange={onSortChange} />,
     );
 
@@ -161,7 +165,7 @@ describe("RepositoryListControls", () => {
     const onPerPageChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <RepositoryListControls
         {...defaultProps}
         onPerPageChange={onPerPageChange}
@@ -180,7 +184,9 @@ describe("RepositoryListControls", () => {
 
   it("選択された言語が反映される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} language="TypeScript" />);
+    renderWithIntl(
+      <RepositoryListControls {...defaultProps} language="TypeScript" />,
+    );
 
     // Assert
     const languageSelect = screen.getByLabelText(
@@ -191,7 +197,9 @@ describe("RepositoryListControls", () => {
 
   it("選択されたソートが反映される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} normalizedSort="stars" />);
+    renderWithIntl(
+      <RepositoryListControls {...defaultProps} normalizedSort="stars" />,
+    );
 
     // Assert
     const sortSelect = screen.getByLabelText("ソート") as HTMLSelectElement;
@@ -200,7 +208,9 @@ describe("RepositoryListControls", () => {
 
   it("選択された表示件数が反映される", () => {
     // Act
-    render(<RepositoryListControls {...defaultProps} normalizedPerPage={50} />);
+    renderWithIntl(
+      <RepositoryListControls {...defaultProps} normalizedPerPage={50} />,
+    );
 
     // Assert
     const perPageSelect = screen.getByLabelText(
@@ -219,7 +229,7 @@ describe("RepositoryListControls", () => {
     };
 
     // Act
-    render(
+    renderWithIntl(
       <RepositoryListControls {...defaultProps} pagination={largePagination} />,
     );
 
@@ -232,7 +242,7 @@ describe("RepositoryListControls", () => {
     const onPageChange = vi.fn();
     const user = userEvent.setup();
 
-    render(
+    renderWithIntl(
       <RepositoryListControls {...defaultProps} onPageChange={onPageChange} />,
     );
 

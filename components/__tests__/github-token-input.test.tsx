@@ -2,6 +2,10 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { GitHubTokenInput } from "../github/github-token-input";
+import { IntlWrapper } from "@/test-utils/intl-wrapper";
+
+const renderWithIntl = (ui: React.ReactElement) =>
+  render(<IntlWrapper>{ui}</IntlWrapper>);
 
 // fetch をモック（システム境界）
 const mockFetch = vi.fn();
@@ -26,7 +30,7 @@ describe("GitHubTokenInput", () => {
 
     it("入力欄と保存ボタンが表示される", async () => {
       // Act
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       // Assert: 観察可能なUIを検証
       await waitFor(() => {
@@ -39,7 +43,7 @@ describe("GitHubTokenInput", () => {
 
     it("入力欄はパスワード型でプレースホルダーがある", async () => {
       // Act
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       // Assert
       await waitFor(() => {
@@ -52,7 +56,7 @@ describe("GitHubTokenInput", () => {
     it("空欄では保存ボタンが無効、入力すると有効になる", async () => {
       // Arrange
       const user = userEvent.setup();
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       await waitFor(() => {
         expect(
@@ -85,7 +89,7 @@ describe("GitHubTokenInput", () => {
           json: async () => ({ success: true }),
         });
 
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       await waitFor(() => {
         expect(
@@ -120,7 +124,7 @@ describe("GitHubTokenInput", () => {
           json: async () => ({ success: true }),
         });
 
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       await waitFor(() => {
         expect(
@@ -153,7 +157,7 @@ describe("GitHubTokenInput", () => {
           json: async () => ({ error: "Invalid token" }),
         });
 
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       await waitFor(() => {
         expect(
@@ -188,7 +192,7 @@ describe("GitHubTokenInput", () => {
 
     it("設定済み表示とクリアボタンが表示され、入力欄は非表示", async () => {
       // Act
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       // Assert
       await waitFor(() => {
@@ -213,7 +217,7 @@ describe("GitHubTokenInput", () => {
           json: async () => ({ success: true }),
         });
 
-      render(<GitHubTokenInput />);
+      renderWithIntl(<GitHubTokenInput />);
 
       await waitFor(() => {
         expect(screen.getByText("クリア")).toBeInTheDocument();
@@ -241,7 +245,9 @@ describe("GitHubTokenInput", () => {
     });
 
     // Act
-    const { container } = render(<GitHubTokenInput className="custom-class" />);
+    const { container } = renderWithIntl(
+      <GitHubTokenInput className="custom-class" />,
+    );
 
     // Assert: ローディング完了を待ってからクラス確認
     await waitFor(() => {

@@ -3,11 +3,13 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NuqsTestingAdapter } from "nuqs/adapters/testing";
+import { NextIntlClientProvider } from "next-intl";
 import { RepositoryList } from "../repository/repository-list";
 import type {
   Repository,
   SearchRepositoriesResponse,
 } from "@/lib/github/types";
+import jaMessages from "@/lib/i18n/locales/ja.json";
 
 const mockRepository: Repository = {
   id: 1,
@@ -49,11 +51,13 @@ const renderWithProviders = (searchParams: string) => {
   const queryClient = createQueryClient();
 
   const renderResult = render(
-    <QueryClientProvider client={queryClient}>
-      <NuqsTestingAdapter searchParams={searchParams}>
-        <RepositoryList />
-      </NuqsTestingAdapter>
-    </QueryClientProvider>,
+    <NextIntlClientProvider locale="ja" messages={jaMessages}>
+      <QueryClientProvider client={queryClient}>
+        <NuqsTestingAdapter searchParams={searchParams}>
+          <RepositoryList />
+        </NuqsTestingAdapter>
+      </QueryClientProvider>
+    </NextIntlClientProvider>,
   );
 
   return { queryClient, ...renderResult };
