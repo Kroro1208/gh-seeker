@@ -95,7 +95,7 @@
   },
   "tokenGuide": {
     "title": "はじめに: GitHub Token の設定",
-    "description": "このアプリを使用するには、GitHub Token の設定が必要です。右上の入力欄にトークンを入力して「保存」してください。",
+    "description": "このアプリを使用するには、GitHub Token の設定が必要です。\n右上の入力欄にトークンを入力して「保存」してください。",
     "securityNote": "トークンは安全に保存されます",
     "stepsTitle": "Token の取得手順",
     "step1": "を開く（GitHub へのログインが必要）",
