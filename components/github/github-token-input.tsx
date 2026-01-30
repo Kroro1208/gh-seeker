@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { setGitHubToken, hasGitHubToken } from "@/lib/github/token";
@@ -11,6 +12,8 @@ type GitHubTokenInputProps = {
 };
 
 export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
+  const t = useTranslations("token");
+  const tCommon = useTranslations("common");
   const [token, setToken] = useState("");
   const [hasToken, setHasToken] = useState<boolean | null>(null); // null = 確認中
   const [saving, setSaving] = useState(false);
@@ -35,11 +38,11 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
       setToken(""); // 入力欄クリア
       setHasToken(true);
     } else {
-      setError("保存に失敗しました。トークン形式を確認してください。");
+      setError(t("saveError"));
     }
 
     setSaving(false);
-  }, [token]);
+  }, [token, t]);
 
   const handleClear = useCallback(async () => {
     setSaving(true);
@@ -51,14 +54,14 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
   return (
     <div className={className}>
       <label className="flex items-center justify-end gap-3 text-sm text-muted-foreground">
-        <span className="whitespace-nowrap">GitHub Token</span>
+        <span className="whitespace-nowrap">{t("label")}</span>
         {isLoading ? (
-          <span className="text-muted-foreground">確認中...</span>
+          <span className="text-muted-foreground">{t("checking")}</span>
         ) : hasToken ? (
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1 text-green-600">
               <Check className="h-4 w-4" />
-              設定済み
+              {t("configured")}
             </span>
             <Button
               variant="ghost"
@@ -67,7 +70,7 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
               disabled={saving}
               className="h-7 px-2 text-xs"
             >
-              クリア
+              {t("clear")}
             </Button>
           </div>
         ) : (
@@ -76,12 +79,12 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
               type="password"
               name="github_token"
               autoComplete="off"
-              placeholder="ghp_..."
+              placeholder={t("placeholder")}
               value={token}
               onChange={(e) => setToken(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSave()}
               className="h-9 w-full"
-              aria-label="GitHub Personal Access Token"
+              aria-label={t("inputLabel")}
             />
             <Button
               onClick={handleSave}
@@ -89,7 +92,11 @@ export function GitHubTokenInput({ className }: GitHubTokenInputProps) {
               size="sm"
               className="h-9"
             >
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "保存"}
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                tCommon("save")
+              )}
             </Button>
           </div>
         )}

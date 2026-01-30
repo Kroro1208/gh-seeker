@@ -12,5 +12,4 @@ export const searchParamsParsers = {
 };
 
 // 検索パラメータをURLクエリ文字列にシリアライズ
-
 export const serializeSearchParams = createSerializer(searchParamsParsers);

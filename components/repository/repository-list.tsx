@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRepositorySearch } from "@/hooks/use-repository-search";
 import { RepositoryCard } from "./repository-card";
 import { Pagination } from "./pagination";
@@ -12,6 +13,9 @@ import { AlertCircle } from "lucide-react";
 import { getErrorPresentation } from "@/lib/github/errors";
 
 export function RepositoryList() {
+  const t = useTranslations("search");
+  const tCommon = useTranslations("common");
+  const tError = useTranslations();
   const { state, handlers } = useRepositorySearch();
 
   const {
@@ -59,7 +63,13 @@ export function RepositoryList() {
 
   // エラー状態
   if (error) {
-    const { title, description, canRetry } = getErrorPresentation(error);
+    const errorInfo = getErrorPresentation(error);
+    const title = tError(errorInfo.titleKey);
+    const description = errorInfo.descriptionText
+      ? errorInfo.descriptionText
+      : errorInfo.descriptionKey
+        ? tError(errorInfo.descriptionKey)
+        : "";
     return (
       <div className="flex min-h-[20vh] w-full items-center justify-center px-4">
         <Alert variant="destructive" className="w-full max-w-md">
@@ -67,14 +77,14 @@ export function RepositoryList() {
           <AlertTitle>{title}</AlertTitle>
           <AlertDescription className="mt-2 space-y-2">
             <p>{description}</p>
-            {canRetry && (
+            {errorInfo.canRetry && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handlers.refetch}
                 className="mt-2"
               >
-                再試行
+                {tCommon("retry")}
               </Button>
             )}
           </AlertDescription>
@@ -88,12 +98,8 @@ export function RepositoryList() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-        <h3 className="text-lg font-semibold mb-2">
-          該当するリポジトリが見つかりませんでした
-        </h3>
-        <p className="text-muted-foreground">
-          別のキーワードで検索してみてください
-        </p>
+        <h3 className="text-lg font-semibold mb-2">{t("noResults")}</h3>
+        <p className="text-muted-foreground">{t("noResultsHint")}</p>
       </div>
     );
   }
@@ -116,12 +122,8 @@ export function RepositoryList() {
       {filteredItems.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">
-            該当するリポジトリが見つかりませんでした
-          </h3>
-          <p className="text-muted-foreground">
-            言語フィルターを変更してみてください
-          </p>
+          <h3 className="text-lg font-semibold mb-2">{t("noFilterResults")}</h3>
+          <p className="text-muted-foreground">{t("noFilterResultsHint")}</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

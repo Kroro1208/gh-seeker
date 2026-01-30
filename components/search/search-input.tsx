@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
@@ -8,6 +9,8 @@ import { useSearchForm } from "@/hooks/use-search-form";
 import { SearchGuide } from "@/components/search/search-guide";
 
 export function SearchInput() {
+  const t = useTranslations("search");
+  const tCommon = useTranslations("common");
   const { state, handlers } = useSearchForm();
   const { inputValue, validationError } = state;
   const { setInputValue, handleSubmit, clearValidationError } = handlers;
@@ -35,16 +38,16 @@ export function SearchInput() {
             type="search"
             name="q"
             autoComplete="off"
-            placeholder="リポジトリを検索..."
+            placeholder={t("placeholder")}
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
             className="pl-9"
-            aria-label="リポジトリ検索"
+            aria-label={t("inputLabel")}
             ref={inputRef}
           />
         </div>
         <Button type="submit" className="cursor-pointer">
-          検索
+          {tCommon("search")}
         </Button>
       </form>
       {validationError && (

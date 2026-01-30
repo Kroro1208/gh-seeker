@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useRepository } from "@/lib/github/use-search-repository";
 import { useRelatedRepositories } from "@/hooks/use-related-repositories";
 import { formatDateJa } from "@/lib/date";
@@ -30,6 +31,9 @@ interface RepositoryDetailProps {
 }
 
 export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
+  const t = useTranslations("repository");
+  const tCommon = useTranslations("common");
+  const tError = useTranslations();
   const [
     {
       repoId: repoIdParam,
@@ -64,21 +68,27 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
   }
 
   if (error) {
-    const { title, description, canRetry } = getErrorPresentation(error);
+    const errorInfo = getErrorPresentation(error);
+    const title = tError(errorInfo.titleKey);
+    const description = errorInfo.descriptionText
+      ? errorInfo.descriptionText
+      : errorInfo.descriptionKey
+        ? tError(errorInfo.descriptionKey)
+        : "";
     return (
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
         <AlertTitle>{title}</AlertTitle>
         <AlertDescription className="mt-2 space-y-2">
           <p>{description}</p>
-          {canRetry && (
+          {errorInfo.canRetry && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => refetch()}
               className="mt-2"
             >
-              再試行
+              {tCommon("retry")}
             </Button>
           )}
         </AlertDescription>
@@ -95,7 +105,7 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
       <Button variant="ghost" asChild className="gap-2">
         <Link href={backHref}>
           <ArrowLeft className="h-4 w-4" />
-          検索結果に戻る
+          {t("backToResults")}
         </Link>
       </Button>
 
@@ -123,22 +133,22 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatItem
               icon={<Star className="h-5 w-5 text-yellow-500" />}
-              label="Stars"
+              label={t("stars")}
               value={data.stargazers_count}
             />
             <StatItem
               icon={<Eye className="h-5 w-5 text-blue-500" />}
-              label="Watchers"
+              label={t("watchers")}
               value={data.watchers_count}
             />
             <StatItem
               icon={<GitFork className="h-5 w-5 text-green-500" />}
-              label="Forks"
+              label={t("forks")}
               value={data.forks_count}
             />
             <StatItem
               icon={<AlertCircle className="h-5 w-5 text-red-500" />}
-              label="Issues"
+              label={t("issues")}
               value={data.open_issues_count}
             />
           </div>
@@ -155,11 +165,15 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>作成日: {formatDateJa(data.created_at)}</span>
+              <span>
+                {t("createdAt")}: {formatDateJa(data.created_at)}
+              </span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>最終更新: {formatDateJa(data.updated_at)}</span>
+              <span>
+                {t("lastUpdated")}: {formatDateJa(data.updated_at)}
+              </span>
             </div>
           </div>
 
@@ -168,7 +182,7 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
             <div className="flex items-center gap-2 text-sm">
               <Scale className="h-4 w-4" />
               <span className="font-medium">
-                ライセンス: {data.license.name}
+                {t("license")}: {data.license.name}
               </span>
             </div>
           )}
@@ -176,7 +190,7 @@ export function RepositoryDetail({ owner, repo }: RepositoryDetailProps) {
           {/* GitHubへのリンク */}
           <Button asChild className="w-full">
             <a href={data.html_url} target="_blank" rel="noopener noreferrer">
-              GitHubで開く
+              {t("viewOnGitHub")}
             </a>
           </Button>
         </CardContent>
@@ -237,11 +251,12 @@ function RelatedRepositoriesSection({
   page: number | null;
   perPage: number | null;
 }) {
+  const t = useTranslations("repository");
   const { items, isLoading, error, hasResults } = state;
 
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-semibold">関連リポジトリ</h2>
+      <h2 className="text-xl font-semibold">{t("relatedTitle")}</h2>
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, index) => (
@@ -249,9 +264,7 @@ function RelatedRepositoriesSection({
           ))}
         </div>
       ) : error ? (
-        <p className="text-sm text-muted-foreground">
-          関連リポジトリを取得できませんでした
-        </p>
+        <p className="text-sm text-muted-foreground">{t("relatedError")}</p>
       ) : hasResults ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {items.map((related) => (
@@ -268,9 +281,7 @@ function RelatedRepositoriesSection({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          関連リポジトリが見つかりませんでした
-        </p>
+        <p className="text-sm text-muted-foreground">{t("relatedEmpty")}</p>
       )}
     </section>
   );

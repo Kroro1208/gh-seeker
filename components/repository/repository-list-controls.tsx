@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { SearchRepositoriesParams } from "@/lib/github/types";
 import { LanguageOption } from "@/lib/search/repository-search-logic";
 import { Pagination } from "./pagination";
@@ -32,6 +33,11 @@ export function RepositoryListControls({
   onSortChange,
   onPerPageChange,
 }: RepositoryListControlsProps) {
+  const tSearch = useTranslations("search");
+  const tFilter = useTranslations("filter");
+  const tSort = useTranslations("sort");
+  const tPerPage = useTranslations("perPage");
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-3">
@@ -44,21 +50,23 @@ export function RepositoryListControls({
           />
         )}
         <p className="text-sm text-muted-foreground self-center">
-          {pagination.displayedCount.toLocaleString()} 件表示 /{" "}
-          {pagination.effectiveTotalCount.toLocaleString()} 件
+          {tSearch("resultsCount", {
+            displayed: pagination.displayedCount.toLocaleString(),
+            total: pagination.effectiveTotalCount.toLocaleString(),
+          })}
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          言語
+          {tFilter("language")}
           <select
             name="language"
             className="h-9 w-48 cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
             value={language}
             onChange={(event) => onLanguageChange(event.target.value)}
-            aria-label="言語フィルター"
+            aria-label={tFilter("languageLabel")}
           >
-            <option value="">すべて</option>
+            <option value="">{tFilter("allLanguages")}</option>
             {languageOptions.map((option) => (
               <option key={option.language} value={option.language}>
                 {option.language} ({option.count.toLocaleString()})
@@ -67,32 +75,32 @@ export function RepositoryListControls({
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          ソート
+          {tSort("label")}
           <select
             name="sort"
             className="h-9 cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
             value={normalizedSort}
             onChange={(event) => onSortChange(event.target.value)}
-            aria-label="ソート"
+            aria-label={tSort("label")}
           >
-            <option value="">並び替え</option>
-            <option value="stars">Star数（降順）</option>
-            <option value="updated">更新日時（降順）</option>
-            <option value="forks">フォーク数（降順）</option>
+            <option value="">{tSort("bestMatch")}</option>
+            <option value="stars">{tSort("stars")}</option>
+            <option value="updated">{tSort("updated")}</option>
+            <option value="forks">{tSort("forks")}</option>
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          表示件数
+          {tPerPage("label")}
           <select
             name="per_page"
             className="h-9 cursor-pointer rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-ring"
             value={normalizedPerPage}
             onChange={(event) => onPerPageChange(event.target.value)}
-            aria-label="1ページあたりの表示件数"
+            aria-label={tPerPage("ariaLabel")}
           >
-            <option value="10">10件</option>
-            <option value="30">30件</option>
-            <option value="50">50件</option>
+            <option value="10">{tPerPage("items", { count: 10 })}</option>
+            <option value="30">{tPerPage("items", { count: 30 })}</option>
+            <option value="50">{tPerPage("items", { count: 50 })}</option>
           </select>
         </label>
       </div>

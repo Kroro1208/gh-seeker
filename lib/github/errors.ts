@@ -40,33 +40,41 @@ class GitHubResponseFormatError extends GitHubError {
   }
 }
 
-export function getErrorPresentation(error: unknown) {
-  const fallback = {
-    title: "エラーが発生しました。",
-    description: error instanceof Error ? error.message : "不明なエラーです",
+export type ErrorPresentation = {
+  titleKey: string;
+  descriptionKey?: string;
+  descriptionText?: string;
+  canRetry: boolean;
+};
+
+export function getErrorPresentation(error: unknown): ErrorPresentation {
+  const fallback: ErrorPresentation = {
+    titleKey: "error.generic",
+    descriptionText: error instanceof Error ? error.message : undefined,
+    descriptionKey: error instanceof Error ? undefined : "error.unknown",
     canRetry: true,
   };
 
   if (error instanceof GitHubValidationError) {
     return {
-      title: "入力エラーです。",
-      description: error.message,
+      titleKey: "error.validation",
+      descriptionText: error.message,
       canRetry: false,
     };
   }
 
   if (error instanceof GitHubNetworkError) {
     return {
-      title: "ネットワークエラーです。",
-      description: "通信状況を確認して再試行してください。",
+      titleKey: "error.network",
+      descriptionKey: "error.networkHint",
       canRetry: true,
     };
   }
 
   if (error instanceof GitHubResponseFormatError) {
     return {
-      title: "レスポンス形式が不正です。",
-      description: "時間をおいて再試行してください。",
+      titleKey: "error.responseFormat",
+      descriptionKey: "error.responseFormatHint",
       canRetry: true,
     };
   }
@@ -74,8 +82,8 @@ export function getErrorPresentation(error: unknown) {
   if (error instanceof GitHubAPIError) {
     if (error.status === 404) {
       return {
-        title: "データが見つかりませんでした。",
-        description: error.message,
+        titleKey: "error.notFound",
+        descriptionText: error.message,
         canRetry: false,
       };
     }
@@ -83,8 +91,8 @@ export function getErrorPresentation(error: unknown) {
       ? error.status >= 500 || error.status === 429
       : true;
     return {
-      title: "APIエラーが発生しました。",
-      description: error.message,
+      titleKey: "error.api",
+      descriptionText: error.message,
       canRetry,
     };
   }

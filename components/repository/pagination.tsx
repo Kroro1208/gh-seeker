@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 
 type PaginationProps = {
@@ -15,6 +16,7 @@ export function Pagination({
   onPageChange,
   className,
 }: PaginationProps) {
+  const t = useTranslations("pagination");
   const pageItems = buildPageItems(currentPage, totalPages);
 
   return (
@@ -27,7 +29,7 @@ export function Pagination({
         onClick={() => onPageChange(Math.max(1, currentPage - 1))}
         disabled={currentPage <= 1}
       >
-        前へ
+        {t("previous")}
       </Button>
       {pageItems.map((item, index) =>
         item === "ellipsis" ? (
@@ -56,7 +58,7 @@ export function Pagination({
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
         disabled={currentPage >= totalPages}
       >
-        次へ
+        {t("next")}
       </Button>
     </div>
   );
