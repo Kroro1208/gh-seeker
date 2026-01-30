@@ -5,6 +5,8 @@ import { QueryProvider } from "./providers/query-provider";
 import { NuqsProvider } from "./providers/nuqs-provider";
 import { Suspense } from "react";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,22 +23,27 @@ export const metadata: Metadata = {
   description: "Search and explore GitHub repositories",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <Suspense fallback={null}>
-            <NuqsProvider>
-              <QueryProvider>{children}</QueryProvider>
-            </NuqsProvider>
-          </Suspense>
+          <NextIntlClientProvider messages={messages}>
+            <Suspense fallback={null}>
+              <NuqsProvider>
+                <QueryProvider>{children}</QueryProvider>
+              </NuqsProvider>
+            </Suspense>
+          </NextIntlClientProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { LocaleToggle } from "@/components/i18n/locale-toggle";
 import { GitHubTokenInput } from "@/components/github/github-token-input";
 
 export function AppHeader() {
@@ -25,6 +26,7 @@ export function AppHeader() {
         <div className="flex w-full items-start gap-4 lg:w-auto lg:flex-1 lg:justify-end">
           <GitHubTokenInput className="w-full max-w-xl" />
           <ThemeToggle />
+          <LocaleToggle />
         </div>
       </div>
     </header>

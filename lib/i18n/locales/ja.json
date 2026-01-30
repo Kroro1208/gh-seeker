@@ -1,0 +1,120 @@
+{
+  "common": {
+    "search": "検索",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "close": "閉じる"
+  },
+  "header": {
+    "title": "GH Seeaker",
+    "themeToggle": "テーマを切り替え",
+    "languageToggle": "言語を切り替え"
+  },
+  "token": {
+    "label": "GitHub Token",
+    "placeholder": "ghp_...",
+    "inputLabel": "GitHub Personal Access Token",
+    "checking": "確認中...",
+    "configured": "設定済み",
+    "clear": "クリア",
+    "saveError": "保存に失敗しました。トークン形式を確認してください。",
+    "guide": {
+      "title": "GitHubトークンの設定",
+      "description": "GitHub APIのレート制限を緩和するために、Personal Access Tokenを設定してください。",
+      "step1": "GitHubの設定ページを開く",
+      "step2": "「Generate new token」をクリック",
+      "step3": "必要なスコープを選択してトークンを生成",
+      "step4": "生成されたトークンをコピーして上のフィールドに貼り付け"
+    }
+  },
+  "search": {
+    "placeholder": "リポジトリを検索...",
+    "inputLabel": "検索キーワード",
+    "noResults": "該当するリポジトリが見つかりませんでした",
+    "noResultsHint": "別のキーワードで検索してみてください",
+    "noFilterResults": "該当するリポジトリが見つかりませんでした",
+    "noFilterResultsHint": "言語フィルターを変更してみてください",
+    "resultsCount": "{displayed} 件表示 / {total} 件",
+    "searching": "検索中..."
+  },
+  "repository": {
+    "stars": "Stars",
+    "watchers": "Watchers",
+    "forks": "Forks",
+    "issues": "Issues",
+    "language": "言語",
+    "license": "ライセンス",
+    "updatedAt": "更新日",
+    "topics": "トピック",
+    "viewOnGitHub": "GitHubで開く",
+    "backToResults": "検索結果に戻る",
+    "createdAt": "作成日",
+    "lastUpdated": "最終更新",
+    "relatedTitle": "関連リポジトリ",
+    "relatedError": "関連リポジトリを取得できませんでした",
+    "relatedEmpty": "関連リポジトリが見つかりませんでした"
+  },
+  "pagination": {
+    "previous": "前へ",
+    "next": "次へ",
+    "page": "ページ {current} / {total}",
+    "goToPage": "{page}ページへ"
+  },
+  "sort": {
+    "label": "ソート",
+    "bestMatch": "並び替え",
+    "stars": "Star数（降順）",
+    "forks": "フォーク数（降順）",
+    "updated": "更新日時（降順）"
+  },
+  "filter": {
+    "language": "言語",
+    "languageLabel": "言語フィルター",
+    "allLanguages": "すべて"
+  },
+  "perPage": {
+    "label": "表示件数",
+    "ariaLabel": "1ページあたりの表示件数",
+    "items": "{count}件"
+  },
+  "error": {
+    "generic": "エラーが発生しました。",
+    "unknown": "不明なエラーです",
+    "validation": "入力エラーです。",
+    "network": "ネットワークエラーです。",
+    "networkHint": "通信状況を確認して再試行してください。",
+    "responseFormat": "レスポンス形式が不正です。",
+    "responseFormatHint": "時間をおいて再試行してください。",
+    "notFound": "データが見つかりませんでした。",
+    "api": "APIエラーが発生しました。",
+    "rateLimit": "APIレート制限に達しました。しばらく待ってから再試行してください。",
+    "unauthorized": "認証エラー。トークンを確認してください。"
+  },
+  "tokenGuide": {
+    "title": "はじめに: GitHub Token の設定",
+    "description": "このアプリを使用するには、GitHub Token の設定が必要です。右上の入力欄にトークンを入力して「保存」してください。",
+    "securityNote": "トークンは安全に保存されます",
+    "stepsTitle": "Token の取得手順",
+    "step1": "を開く（GitHub へのログインが必要）",
+    "step1Link": "GitHub Token 作成ページ",
+    "step2": "Expiration（有効期限）を選択（推奨: 90 days）",
+    "step3": "「Generate token」をクリック",
+    "step4": "）をコピー",
+    "step4Prefix": "生成されたトークン（",
+    "step5": "右上の入力欄にペーストして「保存」"
+  },
+  "searchGuide": {
+    "title": "この検索でできること",
+    "hint": "クリックするとそのままテンプレートが入力されます",
+    "example": "例:",
+    "templates": {
+      "user": "ユーザー名で検索",
+      "language": "言語で絞り込み",
+      "stars": "Star数で絞り込み",
+      "combined": "複合検索"
+    }
+  }
+}

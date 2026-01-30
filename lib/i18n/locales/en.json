@@ -1,0 +1,120 @@
+{
+  "common": {
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close"
+  },
+  "header": {
+    "title": "GH Seeaker",
+    "themeToggle": "Toggle theme",
+    "languageToggle": "Change language"
+  },
+  "token": {
+    "label": "GitHub Token",
+    "placeholder": "ghp_...",
+    "inputLabel": "GitHub Personal Access Token",
+    "checking": "Checking...",
+    "configured": "Configured",
+    "clear": "Clear",
+    "saveError": "Failed to save. Please check the token format.",
+    "guide": {
+      "title": "GitHub Token Setup",
+      "description": "Set up a Personal Access Token to increase GitHub API rate limits.",
+      "step1": "Open GitHub settings page",
+      "step2": "Click 'Generate new token'",
+      "step3": "Select required scopes and generate token",
+      "step4": "Copy the generated token and paste it in the field above"
+    }
+  },
+  "search": {
+    "placeholder": "Search repositories...",
+    "inputLabel": "Search keyword",
+    "noResults": "No matching repositories found",
+    "noResultsHint": "Try a different search term",
+    "noFilterResults": "No matching repositories found",
+    "noFilterResultsHint": "Try changing the language filter",
+    "resultsCount": "Showing {displayed} of {total}",
+    "searching": "Searching..."
+  },
+  "repository": {
+    "stars": "Stars",
+    "watchers": "Watchers",
+    "forks": "Forks",
+    "issues": "Issues",
+    "language": "Language",
+    "license": "License",
+    "updatedAt": "Updated",
+    "topics": "Topics",
+    "viewOnGitHub": "View on GitHub",
+    "backToResults": "Back to results",
+    "createdAt": "Created",
+    "lastUpdated": "Last updated",
+    "relatedTitle": "Related Repositories",
+    "relatedError": "Failed to load related repositories",
+    "relatedEmpty": "No related repositories found"
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page {current} / {total}",
+    "goToPage": "Go to page {page}"
+  },
+  "sort": {
+    "label": "Sort",
+    "bestMatch": "Sort by",
+    "stars": "Stars (desc)",
+    "forks": "Forks (desc)",
+    "updated": "Updated (desc)"
+  },
+  "filter": {
+    "language": "Language",
+    "languageLabel": "Language filter",
+    "allLanguages": "All"
+  },
+  "perPage": {
+    "label": "Per page",
+    "ariaLabel": "Items per page",
+    "items": "{count} items"
+  },
+  "error": {
+    "generic": "An error occurred.",
+    "unknown": "Unknown error",
+    "validation": "Input error.",
+    "network": "Network error.",
+    "networkHint": "Please check your connection and try again.",
+    "responseFormat": "Invalid response format.",
+    "responseFormatHint": "Please wait and try again.",
+    "notFound": "Data not found.",
+    "api": "API error occurred.",
+    "rateLimit": "API rate limit exceeded. Please wait and try again.",
+    "unauthorized": "Authentication error. Please check your token."
+  },
+  "tokenGuide": {
+    "title": "Getting Started: Set up GitHub Token",
+    "description": "To use this app, you need to set up a GitHub Token. Enter your token in the input field at the top right and click \"Save\".",
+    "securityNote": "Your token is stored securely",
+    "stepsTitle": "How to get a Token",
+    "step1": "(GitHub login required)",
+    "step1Link": "GitHub Token creation page",
+    "step2": "Select Expiration (recommended: 90 days)",
+    "step3": "Click \"Generate token\"",
+    "step4": ")",
+    "step4Prefix": "Copy the generated token (",
+    "step5": "Paste it in the input field at the top right and click \"Save\""
+  },
+  "searchGuide": {
+    "title": "What you can search",
+    "hint": "Click to use the template",
+    "example": "e.g.",
+    "templates": {
+      "user": "Search by username",
+      "language": "Filter by language",
+      "stars": "Filter by stars",
+      "combined": "Combined search"
+    }
+  }
+}
