@@ -21,7 +21,9 @@ export function TokenGuide() {
         <h2 className="text-base font-semibold">{t("title")}</h2>
       </div>
 
-      <p className="mt-3 text-sm text-muted-foreground">{t("description")}</p>
+      <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
+        {t("description")}
+      </p>
 
       <div className="mt-4 flex items-start gap-2 rounded-md bg-muted/30 p-3 text-sm">
         <Shield className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />

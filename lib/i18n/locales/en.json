@@ -95,7 +95,7 @@
   },
   "tokenGuide": {
     "title": "Getting Started: Set up GitHub Token",
-    "description": "To use this app, you need to set up a GitHub Token. Enter your token in the input field at the top right and click \"Save\".",
+    "description": "To use this app, you need to set up a GitHub Token.\nEnter your token in the input field at the top right and click \"Save\".",
     "securityNote": "Your token is stored securely",
     "stepsTitle": "How to get a Token",
     "step1": "(GitHub login required)",
