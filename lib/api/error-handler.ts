@@ -1,21 +1,22 @@
+import { match } from "ts-pattern";
 import { NextResponse } from "next/server";
 import { GitHubAPIError } from "@/lib/github/server-client";
 import { logger, serializeError } from "@/lib/logger";
 
 // GitHubAPIErrorをユーザーフレンドリーなメッセージに変換
 function getUserFriendlyMessage(error: GitHubAPIError): string {
-  switch (error.status) {
-    case 401:
-      return "認証に失敗しました。GitHubトークンを確認してください。";
-    case 403:
-      return "アクセスが拒否されました。レート制限に達した可能性があります。しばらく待ってから再度お試しください。";
-    case 404:
-      return "リソースが見つかりませんでした。";
-    case 422:
-      return "検索クエリが無効です。検索条件を確認してください。";
-    default:
-      return "エラーが発生しました。しばらく待ってから再度お試しください。";
-  }
+  return match(error.status)
+    .with(401, () => "認証に失敗しました。GitHubトークンを確認してください。")
+    .with(
+      403,
+      () =>
+        "アクセスが拒否されました。レート制限に達した可能性があります。しばらく待ってから再度お試しください。",
+    )
+    .with(404, () => "リソースが見つかりませんでした。")
+    .with(422, () => "検索クエリが無効です。検索条件を確認してください。")
+    .otherwise(
+      () => "エラーが発生しました。しばらく待ってから再度お試しください。",
+    );
 }
 
 // エラーをNextResponseに変換

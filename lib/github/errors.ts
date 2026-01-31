@@ -1,3 +1,5 @@
+import { match, P } from "ts-pattern";
+
 class GitHubError extends Error {
   constructor(message: string) {
     super(message);
@@ -55,49 +57,40 @@ export function getErrorPresentation(error: unknown): ErrorPresentation {
     canRetry: true,
   };
 
-  if (error instanceof GitHubValidationError) {
-    return {
+  return match(error)
+    .with(P.instanceOf(GitHubValidationError), (err) => ({
       titleKey: "error.validation",
-      descriptionText: error.message,
+      descriptionText: err.message,
       canRetry: false,
-    };
-  }
-
-  if (error instanceof GitHubNetworkError) {
-    return {
+    }))
+    .with(P.instanceOf(GitHubNetworkError), () => ({
       titleKey: "error.network",
       descriptionKey: "error.networkHint",
       canRetry: true,
-    };
-  }
-
-  if (error instanceof GitHubResponseFormatError) {
-    return {
+    }))
+    .with(P.instanceOf(GitHubResponseFormatError), () => ({
       titleKey: "error.responseFormat",
       descriptionKey: "error.responseFormatHint",
       canRetry: true,
-    };
-  }
-
-  if (error instanceof GitHubAPIError) {
-    if (error.status === 404) {
+    }))
+    .with(P.instanceOf(GitHubAPIError), (err) => {
+      if (err.status === 404) {
+        return {
+          titleKey: "error.notFound",
+          descriptionText: err.message,
+          canRetry: false,
+        };
+      }
+      const canRetry = err.status
+        ? err.status >= 500 || err.status === 429
+        : true;
       return {
-        titleKey: "error.notFound",
-        descriptionText: error.message,
-        canRetry: false,
+        titleKey: "error.api",
+        descriptionText: err.message,
+        canRetry,
       };
-    }
-    const canRetry = error.status
-      ? error.status >= 500 || error.status === 429
-      : true;
-    return {
-      titleKey: "error.api",
-      descriptionText: error.message,
-      canRetry,
-    };
-  }
-
-  return fallback;
+    })
+    .otherwise(() => fallback);
 }
 
 export {

@@ -1,3 +1,5 @@
+import { match } from "ts-pattern";
+
 // アプリケーションロガー
 // 本番環境でもエラーを追跡できるように設計
 
@@ -20,17 +22,17 @@ function log(level: LogLevel, message: string, context?: LogContext) {
 
   // 開発環境: コンソールに出力
   if (process.env.NODE_ENV === "development") {
-    switch (level) {
-      case "error":
-        console.error(`[${timestamp}] ERROR:`, message, context);
-        break;
-      case "warn":
-        console.warn(`[${timestamp}] WARN:`, message, context);
-        break;
-      case "info":
-        console.info(`[${timestamp}] INFO:`, message, context);
-        break;
-    }
+    match(level)
+      .with("error", () =>
+        console.error(`[${timestamp}] ERROR:`, message, context),
+      )
+      .with("warn", () =>
+        console.warn(`[${timestamp}] WARN:`, message, context),
+      )
+      .with("info", () =>
+        console.info(`[${timestamp}] INFO:`, message, context),
+      )
+      .exhaustive();
     return;
   }
 
