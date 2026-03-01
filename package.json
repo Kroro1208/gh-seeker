@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@swc/helpers": "^0.5.19",
     "@tanstack/react-query": "^5.90.19",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.1",
