@@ -28,10 +28,11 @@ export async function getSessionToken(): Promise<string | undefined> {
 }
 
 // Rate Limit用のidentifier（トークンのハッシュ値）
-export async function getSessionIdentifier(): Promise<string> {
+// トークン未設定時はnullを返し、呼び出し元でIPフォールバックする
+export async function getSessionIdentifier(): Promise<string | null> {
   const token = await getSessionToken();
   if (token) {
     return crypto.createHash("sha256").update(token).digest("hex").slice(0, 16);
   }
-  return "anonymous";
+  return null;
 }

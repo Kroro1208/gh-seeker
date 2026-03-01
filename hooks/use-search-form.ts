@@ -3,6 +3,9 @@
 import { useState, useCallback, FormEvent } from "react";
 import { useQueryState } from "nuqs";
 
+const GITHUB_TOKEN_PATTERN =
+  /(ghp_[a-zA-Z0-9]{30,}|github_pat_[a-zA-Z0-9_]{20,})/;
+
 export type SearchFormState = {
   inputValue: string;
   validationError: string | null;
@@ -57,6 +60,13 @@ export function useSearchForm(): UseSearchFormResult {
 
       if (!nextQuery) {
         setValidationError("キーワードを入力してください");
+        return;
+      }
+
+      if (GITHUB_TOKEN_PATTERN.test(nextQuery)) {
+        setValidationError(
+          "GitHubトークンは検索欄ではなく上部のToken欄に入力してください",
+        );
         return;
       }
 

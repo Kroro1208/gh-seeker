@@ -15,10 +15,10 @@ type RouteContext = {
 export async function GET(request: Request, { params }: RouteContext) {
   try {
     // セッションからidentifierを取得（トークンのハッシュ値）
-    const identifier =
-      (await getSessionIdentifier()) ||
-      request.headers.get("x-forwarded-for") ||
-      "anonymous";
+    const tokenIdentifier = await getSessionIdentifier();
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const ipIdentifier = forwardedFor?.split(",")[0]?.trim();
+    const identifier = tokenIdentifier || ipIdentifier || "anonymous";
 
     const { success, limit, remaining, reset } =
       await checkRateLimit(identifier);

@@ -1,14 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMemo, useRef } from "react";
 import { useQueryState } from "nuqs";
 import { useSearchRepositories } from "@/lib/github/use-search-repository";
-import { searchRepositories } from "@/lib/github/client";
 import { SearchRepositoriesParams, Repository } from "@/lib/github/types";
 import {
-  API_PER_PAGE,
-  SORT_OPTIONS,
   LanguageOption,
   buildSearchRepositoriesParams,
   computeBasePaginationMetrics,
@@ -52,7 +48,6 @@ type UseRepositorySearchResult = {
 // リポジトリ検索のロジックを管理するカスタムフック
 // UIコンポーネントから状態管理ロジックを分離
 export function useRepositorySearch(): UseRepositorySearchResult {
-  const queryClient = useQueryClient();
   const [query] = useQueryState("q", { defaultValue: "" });
   const [sort, setSort] = useQueryState("sort", { defaultValue: "" });
   const [, setOrder] = useQueryState("order", { defaultValue: "" });
@@ -71,7 +66,6 @@ export function useRepositorySearch(): UseRepositorySearchResult {
     normalizedOrder,
     normalizedPage,
     normalizedPerPage,
-    trimmedQuery,
     trimmedLanguage,
     isLanguageFilterActive,
     hasQuery,
@@ -112,36 +106,6 @@ export function useRepositorySearch(): UseRepositorySearchResult {
 
   const { data, isLoading, isFetching, error, refetch } =
     useSearchRepositories(currentParams);
-
-  // 事前フェッチしてSortオプション切り替え時のUXを向上させる
-  useEffect(() => {
-    if (!trimmedQuery) {
-      return;
-    }
-
-    for (const sortOption of SORT_OPTIONS) {
-      if (sortOption === normalizedSort) continue;
-
-      const params: SearchRepositoriesParams = {
-        q: query,
-        sort: sortOption,
-        order: "desc",
-        page: basePagination.apiPage,
-        per_page: API_PER_PAGE,
-      };
-
-      queryClient.prefetchQuery({
-        queryKey: ["repositories", "search", params],
-        queryFn: () => searchRepositories(params),
-      });
-    }
-  }, [
-    basePagination.apiPage,
-    normalizedSort,
-    query,
-    queryClient,
-    trimmedQuery,
-  ]);
 
   const {
     languageOptions,
