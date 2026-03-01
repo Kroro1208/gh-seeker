@@ -8,11 +8,12 @@ import { getSessionToken, getSessionIdentifier } from "@/lib/session";
 // 一覧取得API
 export async function GET(request: NextRequest) {
   try {
-    // セッションからidentifierを取得（トークンのハッシュ値）
-    const tokenIdentifier = await getSessionIdentifier();
+    // セッションからidentifierを取得（トークンハッシュ or 匿名セッションID）
+    const sessionIdentifier = await getSessionIdentifier();
     const forwardedFor = request.headers.get("x-forwarded-for");
     const ipIdentifier = forwardedFor?.split(",")[0]?.trim();
-    const identifier = tokenIdentifier || ipIdentifier || "anonymous";
+    const identifier =
+      sessionIdentifier || (ipIdentifier ? `ip:${ipIdentifier}` : "anonymous");
 
     const { success, limit, remaining, reset } =
       await checkRateLimit(identifier);
